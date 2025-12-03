@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     private String qrCode;
 
     @Builder
-    public User(String name,String qrCode) {
+    public User(String name, String qrCode) {
         this.name = name;
         this.qrCode = qrCode;
     }
