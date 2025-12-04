@@ -32,12 +32,16 @@ public class User extends BaseEntity {
 
     @NotNull
     @Comment("이름")
-    @Column(name = "qr_code", nullable = false, columnDefinition = "varchar(100)")
+    @Column(unique = true, name = "qr_code", nullable = false, columnDefinition = "varchar(100)")
     private String qrCode;
 
-    @Builder
+    @Builder(access = AccessLevel.PRIVATE)
     public User(String name, String qrCode) {
         this.name = name;
         this.qrCode = qrCode;
+    }
+
+    public static User registerUser(String name, String qrCode) {
+        return User.builder().name(name).qrCode(qrCode).build();
     }
 }
