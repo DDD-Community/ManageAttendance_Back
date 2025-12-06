@@ -1,4 +1,4 @@
-package com.ddd.manage_attendance.domain.auth.domain;
+package com.ddd.manage_attendance.domain.schedule.domain;
 
 import com.ddd.manage_attendance.core.common.BaseEntity;
 import jakarta.persistence.Column;
@@ -8,18 +8,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
-@Getter
 @Entity
-@Table(name = "member")
+@Getter
+@Table(name = "schedule")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
-
+public class Schedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, columnDefinition = "bigint")
@@ -31,17 +30,12 @@ public class User extends BaseEntity {
     private String name;
 
     @NotNull
-    @Comment("qr코드")
-    @Column(unique = true, name = "qr_code", nullable = false, columnDefinition = "varchar(100)")
-    private String qrCode;
+    @Comment("설명")
+    @Column(name = "desc", nullable = false, columnDefinition = "varchar(100)")
+    private String desc;
 
-    @Builder(access = AccessLevel.PRIVATE)
-    public User(String name, String qrCode) {
-        this.name = name;
-        this.qrCode = qrCode;
-    }
-
-    public static User registerUser(String name, String qrCode) {
-        return User.builder().name(name).qrCode(qrCode).build();
-    }
+    @NotNull
+    @Comment("세션 날짜")
+    @Column(unique = true, name = "date", nullable = false, columnDefinition = "varchar(100)")
+    private LocalDate date;
 }

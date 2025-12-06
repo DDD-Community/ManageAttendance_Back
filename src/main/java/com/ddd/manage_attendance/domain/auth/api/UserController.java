@@ -4,6 +4,7 @@ import com.ddd.manage_attendance.domain.auth.api.dto.UserQrResponse;
 import com.ddd.manage_attendance.domain.auth.domain.UserQrFacade;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "유저 API", description = "유저 API 입니다.")
 public class UserController {
 
     private final UserQrFacade userQrFacade;
