@@ -3,7 +3,6 @@ package com.ddd.manage_attendance.domain.auth.api;
 import com.ddd.manage_attendance.domain.auth.api.dto.LoginResponse;
 import com.ddd.manage_attendance.domain.auth.application.AuthService;
 import com.ddd.manage_attendance.domain.auth.domain.OAuthProvider;
-import com.ddd.manage_attendance.domain.oauth.infrastructure.apple.AppleAuthProperties;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.google.GoogleAuthProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,15 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class LoginViewController {
 
     private final GoogleAuthProperties googleAuthProperties;
-    private final AppleAuthProperties appleAuthProperties;
     private final AuthService authService;
 
     @GetMapping("/auth/login")
     public String loginPage(Model model) {
         model.addAttribute("googleClientId", googleAuthProperties.getClientId());
         model.addAttribute("googleRedirectUri", googleAuthProperties.getRedirectUri());
-        model.addAttribute("appleClientId", appleAuthProperties.getClientId());
-        model.addAttribute("appleRedirectUri", appleAuthProperties.getRedirectUri());
         return "oauth-test/login";
     }
 
