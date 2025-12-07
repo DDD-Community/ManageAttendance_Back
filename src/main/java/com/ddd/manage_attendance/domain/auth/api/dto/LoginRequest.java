@@ -3,15 +3,12 @@ package com.ddd.manage_attendance.domain.auth.api.dto;
 import com.ddd.manage_attendance.domain.auth.domain.OAuthProvider;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
-public class LoginRequest {
-    @NotNull(message = "OAuth 제공자는 필수입니다.")
-    private OAuthProvider provider;
+public record LoginRequest(
+        @NotNull(message = "OAuth 제공자는 필수입니다.")
+        OAuthProvider provider,
 
-    @NotBlank(message = "인증 토큰은 필수입니다.")
-    private String token;
+        @NotBlank(message = "인증 토큰은 필수입니다.")
+        String token
+) {
 }
