@@ -1,0 +1,10 @@
+package com.ddd.manage_attendance.domain.auth.domain;
+
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByOauthProviderAndOauthId(OAuthProvider provider, String oauthId);
+
+    boolean existsByOauthProviderAndOauthId(OAuthProvider provider, String oauthId);
+}
