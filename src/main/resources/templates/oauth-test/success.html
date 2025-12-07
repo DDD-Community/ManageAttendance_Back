@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 성공 - 출석앱</title>
+    <style>
+        /* ============================================
+           CSS 변수 정의 (색상, 크기 등 재사용 가능한 값)
+           ============================================ */
+        :root {
+            /* 색상 - 다크 테마 */
+            --color-primary-gradient-start: #1a1a1a;
+            --color-primary-gradient-end: #0a0a0a;
+            --color-success: #4ade80;
+            --color-success-light: #22c55e;
+            --color-success-bg-start: rgba(34, 197, 94, 0.15);
+            --color-success-bg-end: rgba(74, 222, 128, 0.1);
+            --color-success-text: #4ade80;
+            --color-error: #ef4444;
+            --color-error-bg-start: rgba(239, 68, 68, 0.15);
+            --color-error-bg-end: rgba(239, 68, 68, 0.1);
+            --color-error-text: #fca5a5;
+            --color-text-secondary: #9ca3af;
+            --color-text-primary: #f3f4f6;
+            --color-white: rgba(30, 30, 30, 0.95);
+            --color-white-semi: rgba(40, 40, 40, 0.8);
+            --color-border: rgba(255, 255, 255, 0.1);
+            
+            /* 크기 */
+            --container-max-width: 480px;
+            --container-padding: 40px;
+            --container-padding-mobile: 32px 24px;
+            --border-radius-large: 24px;
+            --border-radius-medium: 12px;
+            --border-radius-mobile: 20px;
+            --border-width: 4px;
+            
+            /* 간격 */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 20px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            
+            /* 폰트 */
+            --font-size-title: 32px;
+            --font-size-title-mobile: 28px;
+            --font-size-subtitle: 15px;
+            --font-size-card-title: 28px;
+            --font-size-card-message: 18px;
+            --font-size-body: 16px;
+            --font-size-icon: 64px;
+            
+            /* 애니메이션 */
+            --animation-duration-fast: 0.4s;
+            --animation-duration-normal: 0.6s;
+            --animation-duration-slow: 20s;
+        }
+
+        /* ============================================
+           기본 리셋 및 전역 스타일
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--color-primary-gradient-start) 0%, var(--color-primary-gradient-end) 100%);
+            min-height: 100vh;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-md);
+            position: relative;
+            overflow: hidden;
+            color: var(--color-text-primary);
+        }
+
+        /* 배경 패턴 애니메이션 - 다크 테마 */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground var(--animation-duration-slow) linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* ============================================
+           메인 컨테이너
+           ============================================ */
+        .container {
+            background: var(--color-white);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-large);
+            padding: var(--container-padding);
+            max-width: var(--container-max-width);
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--color-border);
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp var(--animation-duration-normal) ease-out;
+            margin: auto;
+            border: 1px solid var(--color-border);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================
+           헤더 영역
+           ============================================ */
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .header h1 {
+            font-size: var(--font-size-title);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-xs);
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-subtitle);
+            font-weight: 400;
+        }
+
+        .header h1,
+        .header .subtitle {
+            color: var(--color-text-primary);
+        }
+
+        /* ============================================
+           성공 카드
+           ============================================ */
+        .success-card {
+            background: linear-gradient(135deg, var(--color-success-bg-start) 0%, var(--color-success-bg-end) 100%);
+            border-left: var(--border-width) solid var(--color-success);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            color: var(--color-success-text);
+            padding: var(--spacing-xl);
+            border-radius: var(--border-radius-medium);
+            animation: slideIn var(--animation-duration-fast) ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .success-icon {
+            text-align: center;
+            font-size: var(--font-size-icon);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .success-title {
+            font-size: var(--font-size-card-title);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .success-message {
+            font-size: var(--font-size-card-message);
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            color: var(--color-success-text);
+        }
+
+        /* ============================================
+           사용자 정보 영역
+           ============================================ */
+        .user-info {
+            background: var(--color-white-semi);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-medium);
+            margin-top: var(--spacing-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .user-info p {
+            font-size: var(--font-size-body);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-sm);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-primary);
+        }
+
+        .user-info p:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .user-info strong {
+            font-weight: 600;
+            color: var(--color-success-text);
+            opacity: 1;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .user-info span {
+            color: var(--color-text-primary);
+        }
+
+        /* ============================================
+           에러 표시 영역
+           ============================================ */
+        .error-display {
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--color-error-bg-start) 0%, var(--color-error-bg-end) 100%);
+            border-radius: var(--border-radius-medium);
+            border-left: var(--border-width) solid var(--color-error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--color-error-text);
+        }
+
+        .error-display strong {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-body);
+        }
+
+        .error-display .error-message {
+            margin-top: var(--spacing-xs);
+        }
+
+        /* ============================================
+           반응형 디자인 (모바일)
+           ============================================ */
+        @media (max-width: 600px) {
+            .container {
+                padding: var(--container-padding-mobile);
+                border-radius: var(--border-radius-mobile);
+                max-width: 90%;
+            }
+
+            .header h1 {
+                font-size: var(--font-size-title-mobile);
+            }
+
+            .success-card {
+                padding: var(--spacing-lg) var(--spacing-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================
+         성공 화면: 로그인 정보가 정상적으로 전달된 경우
+         ============================================ -->
+    <div class="container" th:if="${loginResponse != null}">
+        <!-- 헤더: 제목 및 부제목 -->
+        <div class="header">
+            <!-- 신규 사용자: 환영 메시지, 기존 사용자: 로그인 완료 메시지 -->
+            <h1 th:text="${loginResponse.isNewUser ? '🎉 환영합니다!' : '✅ 로그인 완료'}">로그인 완료</h1>
+            <!-- 서버에서 전달된 메시지 (회원가입 완료 / 로그인 성공) -->
+            <p class="subtitle" th:text="${loginResponse.message}">로그인 성공</p>
+        </div>
+
+        <!-- 성공 카드: 사용자 정보 표시 -->
+        <div class="success-card">
+            <!-- 아이콘: 신규 사용자는 🎉, 기존 사용자는 ✅ -->
+            <div class="success-icon" th:text="${loginResponse.isNewUser ? '🎉' : '✅'}">✅</div>
+            <!-- 성공 메시지 -->
+            <div class="success-title" th:text="${loginResponse.message}">로그인 성공</div>
+            
+            <!-- 사용자 정보 목록 -->
+            <div class="user-info">
+                <p>
+                    <strong>사용자 ID:</strong>
+                    <span th:text="${loginResponse.userId}">-</span>
+                </p>
+                <p>
+                    <strong>이름:</strong>
+                    <!-- 이름이 null인 경우 '없음' 표시 -->
+                    <span th:text="${loginResponse.name != null ? loginResponse.name : '없음'}">없음</span>
+                </p>
+                <p>
+                    <strong>이메일:</strong>
+                    <!-- 이메일이 null인 경우 '없음' 표시 -->
+                    <span th:text="${loginResponse.email != null ? loginResponse.email : '없음'}">없음</span>
+                </p>
+                <p>
+                    <strong>OAuth 제공자:</strong>
+                    <!-- OAuth 제공자가 null인 경우 '없음' 표시 -->
+                    <span th:text="${loginResponse.oauthProvider != null ? loginResponse.oauthProvider : '없음'}">없음</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================
+         에러 화면: 로그인 정보가 전달되지 않은 경우
+         ============================================ -->
+    <div class="container" th:if="${loginResponse == null}">
+        <div class="error-display">
+            <strong>오류 발생</strong>
+            <div class="error-message">로그인 정보를 불러올 수 없습니다.</div>
+        </div>
+    </div>
+</body>
+</html>

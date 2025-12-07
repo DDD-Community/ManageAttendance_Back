@@ -28,4 +28,24 @@ public class UserService {
     public User getUser(final Long id) {
         return userRepository.findById(id).orElseThrow(DataNotFoundException::new);
     }
+
+    @Transactional(readOnly = true)
+    public boolean existsByOauthProviderAndOauthId(OAuthProvider provider, String oauthId) {
+        return userRepository.existsByOauthProviderAndOauthId(provider, oauthId);
+    }
+
+    @Transactional
+    public User loginOrRegisterOAuthUser(
+            final OAuthProvider provider,
+            final String oauthId,
+            final String email,
+            final String name) {
+        return userRepository
+                .findByOauthProviderAndOauthId(provider, oauthId)
+                .orElseGet(
+                        () -> {
+                            User newUser = User.registerOAuthUser(provider, oauthId, email, name);
+                            return userRepository.save(newUser);
+                        });
+    }
 }
