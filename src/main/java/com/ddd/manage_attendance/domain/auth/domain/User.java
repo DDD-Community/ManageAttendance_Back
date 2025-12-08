@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class User extends BaseEntity {
     @Column(name = "id", nullable = false, columnDefinition = "bigint")
     private Long id;
 
+    @NotNull
     @Comment("이름")
     @Column(name = "name", nullable = true, columnDefinition = "varchar(30)")
     private String name;
@@ -34,8 +36,9 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = true, columnDefinition = "varchar(100)")
     private String email;
 
-    @Comment("QR 코드")
-    @Column(unique = true, name = "qr_code", nullable = true, columnDefinition = "varchar(100)")
+    @NotNull
+    @Comment("qr코드")
+    @Column(unique = true, name = "qr_code", nullable = false, columnDefinition = "varchar(100)")
     private String qrCode;
 
     @Comment("OAuth 제공자")

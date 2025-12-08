@@ -24,8 +24,8 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "OAuth 로그인", description = "OAuth 제공자를 통해 로그인합니다.")
     public LoginResponse login(@Valid @RequestBody final LoginRequest request) {
-        final OAuthProvider provider = request.getProvider();
-        final String token = request.getToken();
+        final OAuthProvider provider = request.provider();
+        final String token = request.token();
         return authService.login(provider, token);
     }
 }

@@ -9,8 +9,7 @@ public record LoginResponse(
         String email,
         OAuthProvider oauthProvider,
         String message,
-        boolean isNewUser
-) {
+        boolean isNewUser) {
     public static LoginResponse from(User user, boolean isNewUser) {
         return new LoginResponse(
                 user.getId(),
@@ -18,7 +17,6 @@ public record LoginResponse(
                 user.getEmail(),
                 user.getOauthProvider(),
                 isNewUser ? "회원가입 완료" : "로그인 성공",
-                isNewUser
-        );
+                isNewUser);
     }
 }
