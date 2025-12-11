@@ -1,7 +1,6 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.core.exception.DataNotFoundException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,21 +11,18 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void registerUser(final String name) {
-        final String qrCodeKey = generateQrCodeKey();
+    public void registerUser(final String name, final String qrCodeKey) {
         userRepository.save(User.registerUser(name, qrCodeKey));
-    }
-
-    private String generateQrCodeKey() {
-        final String token = UUID.randomUUID().toString().replace("-", "");
-        final String prefix = "DDD";
-
-        return prefix + "|" + "|" + token;
     }
 
     @Transactional(readOnly = true)
     public User getUser(final Long id) {
         return userRepository.findById(id).orElseThrow(DataNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByQrCode(final String qrCode) {
+        return userRepository.findByQrCode(qrCode).orElseThrow(DataNotFoundException::new);
     }
 
     @Transactional(readOnly = true)

@@ -9,12 +9,14 @@ import com.google.zxing.common.BitMatrix;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QrService {
     private static final String FORMAT = "PNG";
+    private static final String PREFIX = "DDD";
 
     public byte[] generateQrCodeImage(String content, int width, int height) {
         try {
@@ -35,5 +37,22 @@ public class QrService {
     public String generateQrBase64(String content, int width, int height) {
         final byte[] image = generateQrCodeImage(content, width, height);
         return QrUtil.toBase64(image);
+    }
+
+    public String generateQrCodeKey() {
+        final String token = UUID.randomUUID().toString().replace("-", "");
+
+        return PREFIX + "|" + token;
+    }
+
+    public void extractTokenIfValid(String qrValue) {
+        final String[] parts = qrValue.split("\\|");
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("QR 형식이 올바르지 않습니다.");
+        }
+        final String prefix = parts[0];
+        if (!PREFIX.equals(prefix)) {
+            throw new IllegalArgumentException("유효한 서비스 QR이 아닙니다.");
+        }
     }
 }
