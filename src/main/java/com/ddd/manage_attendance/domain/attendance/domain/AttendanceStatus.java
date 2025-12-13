@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum AttendanceStatus {
     ATTENDED("출석"),
     LATE("지각"),
+    NONE("출석안함"),
     ABSENT("결석");
 
     private final String description;

@@ -10,4 +10,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             Long userId, LocalDateTime start, LocalDateTime end);
 
     List<Attendance> findAttendancesByStatusAndUserId(AttendanceStatus status, Long userId);
+
+    List<Attendance> findAttendancesByUserId(Long userId);
 }

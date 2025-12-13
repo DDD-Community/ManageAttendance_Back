@@ -4,9 +4,11 @@ import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequ
 import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
+import com.ddd.manage_attendance.domain.schedule.api.dto.ScheduleWithAttendanceResponse;
 import com.ddd.manage_attendance.domain.schedule.domain.Schedule;
 import com.ddd.manage_attendance.domain.schedule.domain.ScheduleService;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,5 +30,14 @@ public class AttendanceFacade {
         final Schedule schedule = scheduleService.getScheduleByDate(today);
         attendanceService.checkInByQrCode(
                 user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ScheduleWithAttendanceResponse> getAllMySchedules(final Long userId) {
+        final List<Schedule> schedules = scheduleService.findAllSchedules();
+        final List<Attendance> attendances = attendanceService.findAllUserAttendances(userId);
+        final AttendanceStatusByScheduleIndex attendanceStatusByScheduleIndex =
+                AttendanceStatusByScheduleIndex.from(attendances);
+        return ScheduleWithAttendanceResponse.fromList(schedules, attendanceStatusByScheduleIndex);
     }
 }

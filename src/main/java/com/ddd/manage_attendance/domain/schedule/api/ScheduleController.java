@@ -22,6 +22,6 @@ public class ScheduleController {
     @GetMapping
     @Operation(summary = "전체 스케줄 조회", description = "전체 스케줄을 조회 합니다.")
     public List<ScheduleResponse> getAllSchedule() {
-        return scheduleService.getAllSchedule();
+        return scheduleService.getAllScheduleResponses();
     }
 }

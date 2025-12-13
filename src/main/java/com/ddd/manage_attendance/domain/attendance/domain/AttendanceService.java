@@ -4,6 +4,7 @@ import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResp
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,11 @@ public class AttendanceService {
                         .findAttendancesByStatusAndUserId(AttendanceStatus.ABSENT, userId)
                         .size();
         return AttendanceSummaryResponse.from(totalAttended, totalLate, totalAbsent);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Attendance> findAllUserAttendances(final Long userId) {
+        return attendanceRepository.findAttendancesByUserId(userId);
     }
 
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
