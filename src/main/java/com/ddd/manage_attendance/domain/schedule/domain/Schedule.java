@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,11 @@ public class Schedule extends BaseEntity {
 
     @NotNull
     @Comment("세션 날짜")
-    @Column(unique = true, name = "date", nullable = false, columnDefinition = "varchar(100)")
+    @Column(unique = true, name = "date", nullable = false)
     private LocalDate date;
+
+    @NotNull
+    @Comment("세션 시간")
+    @Column(unique = true, name = "schedule_time", nullable = false)
+    private LocalTime scheduleTime;
 }

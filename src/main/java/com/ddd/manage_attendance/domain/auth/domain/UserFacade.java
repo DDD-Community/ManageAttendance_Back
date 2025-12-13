@@ -8,10 +8,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class UserQrFacade {
+public class UserFacade {
     private final UserService userService;
     private final QrService qrService;
     private static final int DEFAULT_QR_SIZE = 300;
+
+    @Transactional
+    public void registerUser(final String name) {
+        final String qrCode = qrService.generateQrCodeKey();
+        userService.registerUser(name, qrCode);
+    }
 
     @Transactional(readOnly = true)
     public UserQrResponse getUserQr(final Long id) {

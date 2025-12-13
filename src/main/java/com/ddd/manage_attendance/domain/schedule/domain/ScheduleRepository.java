@@ -1,8 +1,13 @@
 package com.ddd.manage_attendance.domain.schedule.domain;
 
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByOrderByDateAsc();
+
+    Optional<Schedule> findByDate(LocalDate today);
 }
