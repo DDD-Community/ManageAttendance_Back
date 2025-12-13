@@ -14,17 +14,20 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     @Transactional(readOnly = true)
-    public List<Schedule> findAllSchedules() {
-        return scheduleRepository.findAllByOrderByDateAsc();
+    public List<Schedule> findAllSchedulesByGenerationId(final Long generationId) {
+        return scheduleRepository.findAllByGenerationIdOrderByDateAsc(generationId);
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getAllScheduleResponses() {
-        return ScheduleResponse.fromList(findAllSchedules());
+    public List<ScheduleResponse> getAllScheduleResponses(final Long generationId) {
+        return ScheduleResponse.fromList(findAllSchedulesByGenerationId(generationId));
     }
 
     @Transactional(readOnly = true)
-    public Schedule getScheduleByDate(final LocalDate date) {
-        return scheduleRepository.findByDate(date).orElseThrow(DataNotFoundException::new);
+    public Schedule getScheduleByDateAndGenerationId(
+            final LocalDate date, final Long generationId) {
+        return scheduleRepository
+                .findByDateAndGenerationId(date, generationId)
+                .orElseThrow(DataNotFoundException::new);
     }
 }

@@ -1,13 +1,12 @@
 package com.ddd.manage_attendance.domain.schedule.domain;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-    List<Schedule> findAllByOrderByDateAsc();
+    List<Schedule> findAllByGenerationIdOrderByDateAsc(Long generationId);
 
-    Optional<Schedule> findByDate(LocalDate today);
+    Optional<Schedule> findByDateAndGenerationId(LocalDate today, Long generationId);
 }

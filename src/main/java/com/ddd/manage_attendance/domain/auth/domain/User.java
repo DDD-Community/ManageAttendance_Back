@@ -50,6 +50,16 @@ public class User extends BaseEntity {
     @Column(unique = true, name = "oauth_id", nullable = true, columnDefinition = "varchar(255)")
     private String oauthId;
 
+    @NotNull
+    @Comment("기수 Id")
+    @Column(name = "generation_id", columnDefinition = "bigint")
+    private Long generationId;
+
+    @NotNull
+    @Comment("팀 Id")
+    @Column(name = "team_id", columnDefinition = "bigint")
+    private Long teamId;
+
     @Builder(access = AccessLevel.PRIVATE)
     public User(
             String name, String email, String qrCode, OAuthProvider oauthProvider, String oauthId) {
