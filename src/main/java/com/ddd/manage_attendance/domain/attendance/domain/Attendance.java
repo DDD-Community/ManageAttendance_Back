@@ -29,12 +29,12 @@ public class Attendance extends BaseEntity {
 
     @NotNull
     @Comment("유저 Id")
-    @Column(name = "member_id", nullable = true, columnDefinition = "varchar(30)")
+    @Column(name = "member_id", columnDefinition = "bigint")
     private Long userId;
 
     @NotNull
     @Comment("스케줄 Id")
-    @Column(name = "schedule_id", nullable = true, columnDefinition = "varchar(30)")
+    @Column(name = "schedule_id", columnDefinition = "bigint")
     private Long scheduleId;
 
     @NotNull

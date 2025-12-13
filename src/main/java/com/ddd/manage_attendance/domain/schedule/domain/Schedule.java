@@ -44,4 +44,9 @@ public class Schedule extends BaseEntity {
     @Comment("세션 시간")
     @Column(unique = true, name = "schedule_time", nullable = false)
     private LocalTime scheduleTime;
+
+    @NotNull
+    @Comment("기수 Id")
+    @Column(name = "generation_id", columnDefinition = "bigint")
+    private Long generationId;
 }

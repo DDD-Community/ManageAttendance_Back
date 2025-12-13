@@ -2,7 +2,6 @@ package com.ddd.manage_attendance.domain.auth.api;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceFacade;
-import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
 import com.ddd.manage_attendance.domain.schedule.api.dto.ScheduleWithAttendanceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,13 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "마이페이지 API", description = "마이페이지 API 입니다.")
 public class MyPageController {
-    private final AttendanceService attendanceService;
     private final AttendanceFacade attendanceFacade;
 
     @GetMapping("/attendances")
     @Operation(summary = "내 출석 현황 요약 조회", description = "내 출석 현황 요약을 조회 합니다.")
     public AttendanceSummaryResponse getMyAttendanceSummary(final Long userId) {
-        return attendanceService.getAttendanceSummary(userId);
+        return attendanceFacade.getMyAttendanceSummary(userId);
     }
 
     @GetMapping("/schedules")
