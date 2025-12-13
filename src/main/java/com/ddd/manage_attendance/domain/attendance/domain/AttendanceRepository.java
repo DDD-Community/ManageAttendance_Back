@@ -1,15 +1,36 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import jakarta.persistence.QueryHint;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.repository.query.Param;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Optional<Attendance> findByUserIdAndCreatedDateBetween(
             Long userId, LocalDateTime start, LocalDateTime end);
 
-    List<Attendance> findAttendancesByStatusAndUserId(AttendanceStatus status, Long userId);
+    List<Attendance> findByUserIdAndScheduleIdIn(Long userId, List<Long> scheduleIds);
 
-    List<Attendance> findAttendancesByUserId(Long userId);
+    @Query(
+            """
+            SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
+                SUM(CASE WHEN a.status = 'ATTENDED' THEN 1 ELSE 0 END) AS attendedCount,
+                SUM(CASE WHEN a.status = 'ABSENT'  THEN 1 ELSE 0 END) AS absentCount,
+                SUM(CASE WHEN a.status = 'LATE'    THEN 1 ELSE 0 END) AS lateCount)
+            FROM Attendance a
+            JOIN Schedule s ON a.scheduleId = s.id
+            WHERE a.userId = :userId
+              AND s.generationId = :generationId
+            """)
+    @QueryHints(
+            @QueryHint(
+                    name = "org.hibernate.comment",
+                    value =
+                            "AttendanceRepository.findStatusSummaryByUserIdAndGenerationId: 유저의 현재 기수 출석 현황 조회"))
+    AttendanceSummary findStatusSummaryByUserIdAndGenerationId(
+            @Param("userId") Long userId, @Param("generationId") Long generationId);
 }

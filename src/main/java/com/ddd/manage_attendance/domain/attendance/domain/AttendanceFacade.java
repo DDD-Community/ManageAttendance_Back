@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
@@ -27,17 +28,28 @@ public class AttendanceFacade {
         qrService.extractTokenIfValid(qrCode);
         final User user = userService.getUserByQrCode(qrCode);
         final LocalDate today = LocalDate.now();
-        final Schedule schedule = scheduleService.getScheduleByDate(today);
+        final Schedule schedule =
+                scheduleService.getScheduleByDateAndGenerationId(today, user.getGenerationId());
         attendanceService.checkInByQrCode(
                 user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
     }
 
     @Transactional(readOnly = true)
     public List<ScheduleWithAttendanceResponse> getAllMySchedules(final Long userId) {
-        final List<Schedule> schedules = scheduleService.findAllSchedules();
-        final List<Attendance> attendances = attendanceService.findAllUserAttendances(userId);
+        final User user = userService.getUser(userId);
+        final List<Schedule> schedules =
+                scheduleService.findAllSchedulesByGenerationId(user.getGenerationId());
+        final List<Long> scheduleIds = schedules.stream().map(Schedule::getId).toList();
+        final List<Attendance> attendances =
+                attendanceService.findAllUserAttendancesByScheduleIds(userId, scheduleIds);
         final AttendanceStatusByScheduleIndex attendanceStatusByScheduleIndex =
                 AttendanceStatusByScheduleIndex.from(attendances);
         return ScheduleWithAttendanceResponse.fromList(schedules, attendanceStatusByScheduleIndex);
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceSummaryResponse getMyAttendanceSummary(final Long userId) {
+        final User user = userService.getUser(userId);
+        return attendanceService.getAttendanceSummary(userId, user.getGenerationId());
     }
 }

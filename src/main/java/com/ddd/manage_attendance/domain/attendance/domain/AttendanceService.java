@@ -39,25 +39,17 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
-    public AttendanceSummaryResponse getAttendanceSummary(final Long userId) {
-        final int totalAttended =
-                attendanceRepository
-                        .findAttendancesByStatusAndUserId(AttendanceStatus.ATTENDED, userId)
-                        .size();
-        final int totalLate =
-                attendanceRepository
-                        .findAttendancesByStatusAndUserId(AttendanceStatus.LATE, userId)
-                        .size();
-        final int totalAbsent =
-                attendanceRepository
-                        .findAttendancesByStatusAndUserId(AttendanceStatus.ABSENT, userId)
-                        .size();
-        return AttendanceSummaryResponse.from(totalAttended, totalLate, totalAbsent);
+    public AttendanceSummaryResponse getAttendanceSummary(
+            final Long userId, final Long generationId) {
+        final AttendanceSummary attendanceSummary =
+                attendanceRepository.findStatusSummaryByUserIdAndGenerationId(userId, generationId);
+        return AttendanceSummaryResponse.from(attendanceSummary);
     }
 
     @Transactional(readOnly = true)
-    public List<Attendance> findAllUserAttendances(final Long userId) {
-        return attendanceRepository.findAttendancesByUserId(userId);
+    public List<Attendance> findAllUserAttendancesByScheduleIds(
+            final Long userId, final List<Long> scheduleIds) {
+        return attendanceRepository.findByUserIdAndScheduleIdIn(userId, scheduleIds);
     }
 
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
