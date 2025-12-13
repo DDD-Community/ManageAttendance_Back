@@ -52,4 +52,12 @@ public class AttendanceFacade {
         final User user = userService.getUser(userId);
         return attendanceService.getAttendanceSummary(userId, user.getGenerationId());
     }
+
+    @Transactional(readOnly = true)
+    public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
+            final Long userId, final Long scheduleId) {
+        // TODO: 운영진인지 확인 하는 기능 추가 필요
+        final User user = userService.getUser(userId);
+        return attendanceService.getGenerationAttendanceSummaryByScheduleId(scheduleId);
+    }
 }
