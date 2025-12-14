@@ -51,15 +51,7 @@ public class LoginViewController {
         }
     }
 
-    /**
-     * Apple 로그인 Callback (A 방식: Redirect + form_post)
-     *
-     * <p>Apple이 form_post로 보내면 application/x-www-form-urlencoded 형태로 받습니다. - code: 토큰 교환용 (현재는 사용하지
-     * 않지만 받아서 로그로 확인) - id_token: 사용자 식별용 JWT (서명 검증 후 sub 추출) - user: 최초 1회만 오는 JSON 문자열 (이름/이메일
-     * 등) - state: CSRF 방지용 (선택적)
-     *
-     * <p>백엔드에서만 처리하는 방식: JSON 응답 반환
-     */
+
     @PostMapping(
             value = "/apple/callback",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
