@@ -10,13 +10,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserFacade {
     private final UserService userService;
+    private final UserRepository userRepository;
     private final QrService qrService;
     private static final int DEFAULT_QR_SIZE = 300;
 
     @Transactional
-    public void registerUser(final String name) {
+    public void registerUser(final String name, final Long generationId, final Long teamId) {
         final String qrCode = qrService.generateQrCodeKey();
-        userService.registerUser(name, qrCode);
+        final String userName = name != null && !name.trim().isEmpty() ? name.trim() : "User";
+        userRepository.save(
+                User.registerUser(
+                        userName, qrCode, generationId, teamId, OAuthProvider.NONE, null, null));
     }
 
     @Transactional(readOnly = true)

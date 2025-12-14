@@ -9,8 +9,8 @@ public record AttendanceSummaryResponse(
         @Schema(description = "총 결석 일", example = "3") int totalAbsent) {
     public static AttendanceSummaryResponse from(final AttendanceSummary attendanceSummary) {
         return new AttendanceSummaryResponse(
-                attendanceSummary.getAttendedCount(),
-                attendanceSummary.getLateCount(),
-                attendanceSummary.getAbsentCount());
+                attendanceSummary.getAttendedCount().intValue(),
+                attendanceSummary.getLateCount().intValue(),
+                attendanceSummary.getAbsentCount().intValue());
     }
 }

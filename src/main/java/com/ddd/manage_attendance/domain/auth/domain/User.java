@@ -62,25 +62,38 @@ public class User extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     public User(
-            String name, String email, String qrCode, OAuthProvider oauthProvider, String oauthId) {
+            String name,
+            String email,
+            String qrCode,
+            OAuthProvider oauthProvider,
+            String oauthId,
+            Long generationId,
+            Long teamId) {
         this.name = name;
         this.email = email;
         this.qrCode = qrCode;
         this.oauthProvider = oauthProvider;
         this.oauthId = oauthId;
+        this.generationId = generationId;
+        this.teamId = teamId;
     }
 
-    public static User registerUser(String name, String qrCode) {
-        return User.builder().name(name).qrCode(qrCode).oauthProvider(OAuthProvider.NONE).build();
-    }
-
-    public static User registerOAuthUser(
-            OAuthProvider provider, String oauthId, String email, String name) {
+    public static User registerUser(
+            String name,
+            String qrCode,
+            Long generationId,
+            Long teamId,
+            OAuthProvider oauthProvider,
+            String oauthId,
+            String email) {
         return User.builder()
                 .name(name)
-                .email(email)
-                .oauthProvider(provider)
+                .qrCode(qrCode)
+                .generationId(generationId)
+                .teamId(teamId)
+                .oauthProvider(oauthProvider)
                 .oauthId(oauthId)
+                .email(email)
                 .build();
     }
 }
