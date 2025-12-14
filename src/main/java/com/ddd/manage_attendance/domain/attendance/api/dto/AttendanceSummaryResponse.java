@@ -4,13 +4,13 @@ import com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record AttendanceSummaryResponse(
-        @Schema(description = "총 출석 일", example = "1") int totalAttended,
-        @Schema(description = "총 지각 일", example = "2") int totalLate,
-        @Schema(description = "총 결석 일", example = "3") int totalAbsent) {
+        @Schema(description = "총 출석 일", example = "1") Long totalAttended,
+        @Schema(description = "총 지각 일", example = "2") Long totalLate,
+        @Schema(description = "총 결석 일", example = "3") Long totalAbsent) {
     public static AttendanceSummaryResponse from(final AttendanceSummary attendanceSummary) {
         return new AttendanceSummaryResponse(
-                attendanceSummary.getAttendedCount().intValue(),
-                attendanceSummary.getLateCount().intValue(),
-                attendanceSummary.getAbsentCount().intValue());
+                attendanceSummary.getAttendedCount(),
+                attendanceSummary.getLateCount(),
+                attendanceSummary.getAbsentCount());
     }
 }
