@@ -51,7 +51,6 @@ public class LoginViewController {
         }
     }
 
-
     @PostMapping(
             value = "/apple/callback",
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
