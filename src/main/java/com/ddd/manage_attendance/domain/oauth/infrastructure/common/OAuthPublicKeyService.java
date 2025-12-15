@@ -6,8 +6,8 @@ import static com.ddd.manage_attendance.domain.oauth.infrastructure.common.JWKCo
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigInteger;
+import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
-import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
@@ -125,13 +125,9 @@ public class OAuthPublicKeyService {
 
     private static ECParameterSpec createECParameterSpec() {
         try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(EC_ALGORITHM);
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec(EC_CURVE_SECP256R1);
-            keyPairGenerator.initialize(ecSpec);
-            java.security.interfaces.ECPublicKey tempPublicKey =
-                    (java.security.interfaces.ECPublicKey)
-                            keyPairGenerator.generateKeyPair().getPublic();
-            return tempPublicKey.getParams();
+            AlgorithmParameters parameters = AlgorithmParameters.getInstance(EC_ALGORITHM);
+            parameters.init(new ECGenParameterSpec(EC_CURVE_SECP256R1));
+            return parameters.getParameterSpec(ECParameterSpec.class);
         } catch (Exception e) {
             throw new RuntimeException("EC ParameterSpec 생성에 실패했습니다.", e);
         }

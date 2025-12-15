@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.oauth.infrastructure.apple.AppleAuthProp
 import com.ddd.manage_attendance.domain.oauth.infrastructure.apple.AppleUserInfoParser;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.google.GoogleAuthProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class LoginViewController {
@@ -60,12 +62,16 @@ public class LoginViewController {
             @RequestParam(value = "id_token", required = false) String idToken,
             @RequestParam(value = "user", required = false) String user,
             @RequestParam(value = "state", required = false) String state) {
+        log.info("[Apple Login] user 파라미터 수신: {}", user != null ? "있음" : "없음 (재로그인)");
+
         if (idToken == null || idToken.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorResponse("인증 정보를 받을 수 없습니다."));
         }
 
         try {
             final String userName = appleUserInfoParser.extractUserName(user);
+            log.info("[Apple Login] 추출된 사용자 이름: {}", userName != null ? userName : "null");
+
             LoginResponse loginResponse = authFacade.login(OAuthProvider.APPLE, idToken, userName);
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {

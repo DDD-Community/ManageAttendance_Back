@@ -44,5 +44,3 @@ public class AppleTokenValidator extends AbstractOAuthTokenValidator<AppleUserIn
         return AppleUserInfo.class;
     }
 }
-
-

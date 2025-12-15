@@ -2,13 +2,15 @@ package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.domain.auth.api.dto.LoginResponse;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
-import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthLoginResult;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthFacade {
@@ -24,6 +26,15 @@ public class AuthFacade {
 
         validateOAuthUserInfo(oauthUserInfo);
 
+        // 기존 사용자 확인
+        final Optional<User> existingUser =
+                userService.findByOAuthProviderAndOAuthId(provider, oauthUserInfo.getSub());
+
+        if (existingUser.isPresent()) {
+            return LoginResponse.from(existingUser.get(), false);
+        }
+
+        // 새 사용자 등록 (Facade가 여러 Service 조율)
         final String userName = determineUserName(oauthUserInfo, providedName);
         final String qrCode = qrService.generateQrCodeKey();
 
@@ -31,8 +42,8 @@ public class AuthFacade {
         final Long defaultGenerationId = 1L;
         final Long defaultTeamId = 1L;
 
-        final OAuthLoginResult result =
-                userService.loginOrRegisterOAuthUser(
+        final User newUser =
+                userService.registerOAuthUser(
                         provider,
                         oauthUserInfo.getSub(),
                         oauthUserInfo.getEmail(),
@@ -41,24 +52,35 @@ public class AuthFacade {
                         defaultGenerationId,
                         defaultTeamId);
 
-        return LoginResponse.from(result.user(), result.isNewUser());
+        return LoginResponse.from(newUser, true);
     }
 
     private String determineUserName(final OAuthUserInfo oauthUserInfo, final String providedName) {
+        log.debug(
+                "[AuthFacade] 사용자 이름 결정 시작 - providedName: {}, oauthName: {}, email: {}",
+                providedName,
+                oauthUserInfo.getName(),
+                oauthUserInfo.getEmail());
+
         if (providedName != null && !providedName.trim().isEmpty()) {
+            log.info("[AuthFacade] providedName 사용: {}", providedName);
             return providedName.trim();
         }
 
         final String oauthName = oauthUserInfo.getName();
         if (oauthName != null && !oauthName.trim().isEmpty()) {
+            log.info("[AuthFacade] oauthName 사용: {}", oauthName);
             return oauthName.trim();
         }
 
         final String email = oauthUserInfo.getEmail();
         if (email != null && email.contains("@")) {
-            return email.split("@")[0];
+            String emailPrefix = email.split("@")[0];
+            log.info("[AuthFacade] 이메일 앞부분 사용: {} (from: {})", emailPrefix, email);
+            return emailPrefix;
         }
 
+        log.warn("[AuthFacade] 기본값 사용: User");
         return "User";
     }
 
