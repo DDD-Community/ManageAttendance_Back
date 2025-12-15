@@ -6,11 +6,9 @@ import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthService
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthFacade {
@@ -56,31 +54,20 @@ public class AuthFacade {
     }
 
     private String determineUserName(final OAuthUserInfo oauthUserInfo, final String providedName) {
-        log.debug(
-                "[AuthFacade] 사용자 이름 결정 시작 - providedName: {}, oauthName: {}, email: {}",
-                providedName,
-                oauthUserInfo.getName(),
-                oauthUserInfo.getEmail());
-
         if (providedName != null && !providedName.trim().isEmpty()) {
-            log.info("[AuthFacade] providedName 사용: {}", providedName);
             return providedName.trim();
         }
 
         final String oauthName = oauthUserInfo.getName();
         if (oauthName != null && !oauthName.trim().isEmpty()) {
-            log.info("[AuthFacade] oauthName 사용: {}", oauthName);
             return oauthName.trim();
         }
 
         final String email = oauthUserInfo.getEmail();
         if (email != null && email.contains("@")) {
-            String emailPrefix = email.split("@")[0];
-            log.info("[AuthFacade] 이메일 앞부분 사용: {} (from: {})", emailPrefix, email);
-            return emailPrefix;
+            return email.split("@")[0];
         }
 
-        log.warn("[AuthFacade] 기본값 사용: User");
         return "User";
     }
 
