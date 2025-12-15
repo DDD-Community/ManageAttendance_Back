@@ -7,6 +7,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByQrCode(String qrCode);
 
     Optional<User> findByOauthProviderAndOauthId(OAuthProvider provider, String oauthId);
-
-    boolean existsByOauthProviderAndOauthId(OAuthProvider provider, String oauthId);
 }

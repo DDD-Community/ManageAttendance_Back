@@ -18,9 +18,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     @Query(
             """
             SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
-                SUM(CASE WHEN a.status = 'ATTENDED' THEN 1 ELSE 0 END) AS attendedCount,
-                SUM(CASE WHEN a.status = 'ABSENT'  THEN 1 ELSE 0 END) AS absentCount,
-                SUM(CASE WHEN a.status = 'LATE'    THEN 1 ELSE 0 END) AS lateCount)
+                COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1 ELSE 0 END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1 ELSE 0 END), 0L))
             FROM Attendance a
             JOIN Schedule s ON a.scheduleId = s.id
             WHERE a.userId = :userId
