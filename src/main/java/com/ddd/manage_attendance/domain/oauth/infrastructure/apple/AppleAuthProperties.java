@@ -17,3 +17,5 @@ public class AppleAuthProperties {
     private String redirectUri;
     private String publicKeyUrl = DEFAULT_PUBLIC_KEY_URL;
 }
+
+
