@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.core.exception.DataNotFoundException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,11 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    @Transactional
-    public void registerUser(final String name, final String qrCodeKey) {
-        userRepository.save(User.registerUser(name, qrCodeKey));
-    }
 
     @Transactional(readOnly = true)
     public User getUser(final Long id) {
@@ -26,22 +22,31 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public boolean existsByOauthProviderAndOauthId(OAuthProvider provider, String oauthId) {
-        return userRepository.existsByOauthProviderAndOauthId(provider, oauthId);
+    public Optional<User> findByOAuthProviderAndOAuthId(
+            final OAuthProvider provider, final String oauthId) {
+        return userRepository.findByOauthProviderAndOauthId(provider, oauthId);
     }
 
     @Transactional
-    public User loginOrRegisterOAuthUser(
+    public User registerUser(
+            final String name, final String qrCode, final Long generationId, final Long teamId) {
+        final String userName = name != null && !name.trim().isEmpty() ? name.trim() : "User";
+        return userRepository.save(
+                User.registerUser(
+                        userName, qrCode, generationId, teamId, OAuthProvider.NONE, null, null));
+    }
+
+    @Transactional
+    public User registerOAuthUser(
             final OAuthProvider provider,
             final String oauthId,
             final String email,
-            final String name) {
-        return userRepository
-                .findByOauthProviderAndOauthId(provider, oauthId)
-                .orElseGet(
-                        () -> {
-                            User newUser = User.registerOAuthUser(provider, oauthId, email, name);
-                            return userRepository.save(newUser);
-                        });
+            final String name,
+            final String qrCode,
+            final Long generationId,
+            final Long teamId) {
+        User newUser =
+                User.registerUser(name, qrCode, generationId, teamId, provider, oauthId, email);
+        return userRepository.save(newUser);
     }
 }
