@@ -15,12 +15,14 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     List<Attendance> findByUserIdAndScheduleIdIn(Long userId, List<Long> scheduleIds);
 
+    List<Attendance> findByScheduleIdAndUserIdIn(Long scheduleId, List<Long> userIds);
+
     @Query(
             """
             SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
-                COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1 ELSE 0 END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1 ELSE 0 END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1 ELSE 0 END), 0L))
+                COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1L ELSE 0L END), 0L))
             FROM Attendance a
             JOIN Schedule s ON a.scheduleId = s.id
             WHERE a.userId = :userId
@@ -37,9 +39,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     @Query(
             """
             SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
-                    SUM(CASE WHEN a.status = 'ATTENDED' THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN a.status = 'ABSENT'  THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN a.status = 'LATE'    THEN 1 ELSE 0 END))
+                  COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1L ELSE 0L END), 0L),
+                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1L ELSE 0L END), 0L))
             FROM Attendance a
             JOIN Schedule s ON a.scheduleId = s.id
             WHERE s.id = :scheduleId

@@ -60,6 +60,12 @@ public class AttendanceService {
         return attendanceRepository.findByUserIdAndScheduleIdIn(userId, scheduleIds);
     }
 
+    @Transactional(readOnly = true)
+    public List<Attendance> findAllUsersAttendancesByScheduleId(
+            final List<Long> userIds, final Long scheduleId) {
+        return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
+    }
+
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
 
         final LocalTime attendedLimit = scheduleTime.plusMinutes(attendLimitTime);

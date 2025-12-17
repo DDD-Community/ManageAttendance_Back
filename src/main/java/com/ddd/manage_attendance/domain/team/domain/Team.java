@@ -30,5 +30,5 @@ public class Team {
     @NotNull
     @Comment("기수 Id")
     @Column(name = "generation_id", columnDefinition = "bigint")
-    private String generationId;
+    private Long generationId;
 }
