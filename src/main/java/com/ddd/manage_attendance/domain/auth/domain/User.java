@@ -60,6 +60,12 @@ public class User extends BaseEntity {
     @Column(name = "team_id", columnDefinition = "bigint")
     private Long teamId;
 
+    @NotNull
+    @Comment("직군")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "job", nullable = false, columnDefinition = "varchar(10)")
+    private JobRole job;
+
     @Builder(access = AccessLevel.PRIVATE)
     public User(
             String name,
@@ -68,7 +74,8 @@ public class User extends BaseEntity {
             OAuthProvider oauthProvider,
             String oauthId,
             Long generationId,
-            Long teamId) {
+            Long teamId,
+            JobRole job) {
         this.name = name;
         this.email = email;
         this.qrCode = qrCode;
@@ -76,6 +83,7 @@ public class User extends BaseEntity {
         this.oauthId = oauthId;
         this.generationId = generationId;
         this.teamId = teamId;
+        this.job = job;
     }
 
     public static User registerUser(
@@ -85,7 +93,8 @@ public class User extends BaseEntity {
             Long teamId,
             OAuthProvider oauthProvider,
             String oauthId,
-            String email) {
+            String email,
+            JobRole job) {
         return User.builder()
                 .name(name)
                 .qrCode(qrCode)
@@ -93,6 +102,7 @@ public class User extends BaseEntity {
                 .teamId(teamId)
                 .oauthProvider(oauthProvider)
                 .oauthId(oauthId)
+                .job(job)
                 .email(email)
                 .build();
     }

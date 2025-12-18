@@ -14,9 +14,10 @@ public class UserFacade {
     private static final int DEFAULT_QR_SIZE = 300;
 
     @Transactional
-    public void registerUser(final String name, final Long generationId, final Long teamId) {
+    public void registerUser(
+            final String name, final Long generationId, final Long teamId, final JobRole jobRole) {
         final String qrCode = qrService.generateQrCodeKey();
-        userService.registerUser(name, qrCode, generationId, teamId);
+        userService.registerUser(name, qrCode, generationId, teamId, jobRole);
     }
 
     @Transactional(readOnly = true)

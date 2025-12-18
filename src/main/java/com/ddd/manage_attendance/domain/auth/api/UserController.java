@@ -25,7 +25,8 @@ public class UserController {
     @PostMapping
     @Operation(summary = "유저 저장", description = "유저를 저장 합니다.")
     public void registerUser(@Valid @RequestBody final UserRegisterRequest request) {
-        userFacade.registerUser(request.name(), request.generationId(), request.teamId());
+        userFacade.registerUser(
+                request.name(), request.generationId(), request.teamId(), request.jobRole());
     }
 
     @GetMapping("/{id}/qr")
