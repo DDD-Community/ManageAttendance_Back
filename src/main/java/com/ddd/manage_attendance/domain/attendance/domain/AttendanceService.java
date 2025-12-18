@@ -47,9 +47,23 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
+    public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
+            final Long scheduleId) {
+        final AttendanceSummary attendanceSummary =
+                attendanceRepository.findStatusSummaryByScheduleId(scheduleId);
+        return AttendanceSummaryResponse.from(attendanceSummary);
+    }
+
+    @Transactional(readOnly = true)
     public List<Attendance> findAllUserAttendancesByScheduleIds(
             final Long userId, final List<Long> scheduleIds) {
         return attendanceRepository.findByUserIdAndScheduleIdIn(userId, scheduleIds);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Attendance> findAllUsersAttendancesByScheduleId(
+            final List<Long> userIds, final Long scheduleId) {
+        return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
     }
 
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
