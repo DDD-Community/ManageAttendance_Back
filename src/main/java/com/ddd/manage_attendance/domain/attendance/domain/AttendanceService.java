@@ -1,9 +1,11 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,13 @@ public class AttendanceService {
     public List<Attendance> findAllUsersAttendancesByScheduleId(
             final List<Long> userIds, final Long scheduleId) {
         return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
+    }
+
+    public List<AttendanceStatusResponse> getStatus() {
+        return Arrays.stream(AttendanceStatus.values())
+                .filter(status -> status != AttendanceStatus.NONE)
+                .map(AttendanceStatusResponse::from)
+                .toList();
     }
 
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
