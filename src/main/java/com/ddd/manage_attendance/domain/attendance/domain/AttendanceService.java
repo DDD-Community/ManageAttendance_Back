@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import com.ddd.manage_attendance.core.exception.DataNotFoundException;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import java.time.LocalDate;
@@ -66,6 +67,11 @@ public class AttendanceService {
     public List<Attendance> findAllUsersAttendancesByScheduleId(
             final List<Long> userIds, final Long scheduleId) {
         return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
+    }
+
+    @Transactional(readOnly = true)
+    public Attendance findAttendanceById(final Long attendanceId) {
+        return attendanceRepository.findById(attendanceId).orElseThrow(DataNotFoundException::new);
     }
 
     public List<AttendanceStatusResponse> getStatus() {
