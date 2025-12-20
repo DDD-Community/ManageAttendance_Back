@@ -53,4 +53,8 @@ public class Attendance extends BaseEntity {
     public static Attendance checkIn(Long userId, Long scheduleId, AttendanceStatus status) {
         return Attendance.builder().userId(userId).scheduleId(scheduleId).status(status).build();
     }
+
+    public void modifyStatus(AttendanceStatus status) {
+        this.status = status;
+    }
 }

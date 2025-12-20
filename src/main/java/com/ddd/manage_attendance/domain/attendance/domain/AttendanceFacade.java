@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.TeamAttendancesResponse;
 import com.ddd.manage_attendance.domain.auth.domain.User;
@@ -13,6 +14,7 @@ import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,5 +84,15 @@ public class AttendanceFacade {
 
         return TeamAttendancesResponse.fromList(
                 teamUsers, team.getName(), statusIndex, attendanceIndex);
+    }
+
+    @Transactional
+    public void modifyAttendance(
+            final Long attendanceId, final AttendanceStatusModifyRequest request) {
+        final Attendance attendance = attendanceService.findAttendanceById(attendanceId);
+        if (!Objects.equals(attendance.getUserId(), request.userId())) {
+            throw new NotUserAttendanceException();
+        }
+        attendance.modifyStatus(request.status());
     }
 }

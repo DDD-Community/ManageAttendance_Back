@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public record TeamAttendancesResponse(
         @Schema(description = "출석 id", example = "1L") Long attendanceId,
+        @Schema(description = "팀원 id", example = "1L") Long userId,
         @Schema(description = "팀원 이름", example = "홍길동") String userName,
         @Schema(description = "팀원 정보", example = "Web1팀/BE") String userInfo,
         @Schema(description = "츨석 상태", example = "LATE") AttendanceStatus attendanceStatus) {
@@ -27,6 +28,7 @@ public record TeamAttendancesResponse(
             final AttendanceByUserIndex attendanceByUserIndex) {
         return new TeamAttendancesResponse(
                 attendanceByUserIndex.get(user.getId()),
+                user.getId(),
                 user.getName(),
                 userInfoOf(teamName, user),
                 attendanceStatusByUserIndex.getOrDefault(user.getId(), AttendanceStatus.NONE));
