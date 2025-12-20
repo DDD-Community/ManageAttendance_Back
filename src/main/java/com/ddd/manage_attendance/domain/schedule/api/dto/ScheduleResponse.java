@@ -10,6 +10,7 @@ public record ScheduleResponse(
         @Schema(description = "스케줄 고유 ID", example = "1") Long id,
         @Schema(description = "제목", example = "제목입니다.") String name,
         @Schema(description = "내용", example = "내용입니다.") String desc,
+        @Schema(description = "년", example = "2025") int year,
         @Schema(description = "월", example = "12") int month,
         @Schema(description = "요일", example = "25") int day) {
     public static ScheduleResponse from(final Schedule schedule) {
@@ -17,6 +18,7 @@ public record ScheduleResponse(
                 schedule.getId(),
                 schedule.getName(),
                 schedule.getDesc(),
+                schedule.getDate().getYear(),
                 schedule.getDate().getMonthValue(),
                 schedule.getDate().getDayOfMonth());
     }
