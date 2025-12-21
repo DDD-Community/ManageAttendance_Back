@@ -23,26 +23,24 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean bootJar
 
-      - name: Upload jar to VM
+      # ⬇️ 핵심 변경 포인트
+      - name: Upload app.jar to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCP_VM_HOST }}
           username: dddstudy1
           key: ${{ secrets.GCP_VM_SSH_KEY }}
-          source: "build/libs/*.jar"
-          target: "/opt/attendance-api/"
+          source: "build/libs/*SNAPSHOT.jar"
+          target: "/opt/attendance-api/app.jar"
+          strip_components: 2
           overwrite: true
 
-      - name: Activate jar and restart service
+      - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.GCP_VM_HOST }}
           username: dddstudy1
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            set -e
-            cd /opt/attendance-api
-            # 가장 최신 jar를 app.jar로 고정
-            ls -t *.jar | head -n 1 | xargs -I {} mv -f {} app.jar
             sudo systemctl restart attendance-api
             sudo systemctl status attendance-api --no-pager
