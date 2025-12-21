@@ -4,9 +4,14 @@ on:
   push:
     branches: ["main"]
 
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -17,30 +22,85 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
 
-      - name: Build (Gradle)
+      - name: Build (Gradle bootJar)
         run: |
+          set -e
           chmod +x ./gradlew
           ./gradlew clean bootJar
 
-      # ⬇️ 핵심 변경 포인트
-      - name: Upload app.jar to VM
+      - name: Verify build output
+        run: |
+          set -e
+          echo "=== build/libs ==="
+          ls -lah build/libs
+          COUNT=$(ls -1 build/libs/*.jar | wc -l | tr -d ' ')
+          if [ "$COUNT" -lt 1 ]; then
+            echo "ERROR: No jar produced in build/libs"; exit 1
+          fi
+
+      # 1) jar들을 "incoming"으로 업로드 (파일명 변해도 상관없게)
+      - name: Upload jars to VM (incoming)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCP_VM_HOST }}
-          username: dddstudy1
+          username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
-          source: "build/libs/*SNAPSHOT.jar"
-          target: "/opt/attendance-api/app.jar"
-          strip_components: 2
+          source: "build/libs/*.jar"
+          target: "/opt/attendance-api/incoming/"
           overwrite: true
 
-      - name: Restart service
+      # 2) VM에서 정확히 app.jar로 교체 + 서비스 재시작 + 실패 시 원인 로그 출력
+      - name: Activate app.jar and restart service (with logs)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.GCP_VM_HOST }}
-          username: dddstudy1
+          username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            sudo systemctl restart attendance-api
-            sudo systemctl status attendance-api --no-pager
+            set -euo pipefail
+
+            APP_DIR="/opt/attendance-api"
+            INCOMING="$APP_DIR/incoming"
+            SERVICE="attendance-api"
+
+            echo "=== prep directories ==="
+            sudo mkdir -p "$INCOMING"
+            sudo chown -R "$USER":"$USER" "$APP_DIR"
+
+            echo "=== incoming files ==="
+            ls -lah "$INCOMING" || true
+
+            # 최신 jar 선택 (여러 개 있어도 최신 하나만)
+            JAR="$(ls -t "$INCOMING"/*.jar | head -n 1)"
+            echo "Selected jar: $JAR"
+
+            # 기존 app.jar 백업
+            if [ -f "$APP_DIR/app.jar" ]; then
+              cp -f "$APP_DIR/app.jar" "$APP_DIR/app.jar.bak"
+              echo "Backed up existing app.jar -> app.jar.bak"
+            fi
+
+            # app.jar로 교체
+            cp -f "$JAR" "$APP_DIR/app.jar"
+
+            echo "=== app.jar info ==="
+            ls -lah "$APP_DIR/app.jar" || true
+            file "$APP_DIR/app.jar" || true
+
+            echo "=== restart service ==="
+            sudo systemctl restart "$SERVICE" || true
+
+            echo "=== service status ==="
+            sudo systemctl status "$SERVICE" --no-pager || true
+
+            echo "=== last 200 service logs ==="
+            sudo journalctl -u "$SERVICE" -n 200 --no-pager || true
+
+            echo "=== smoke test (localhost:8080) ==="
+            curl -i --max-time 5 http://127.0.0.1:8080/ || true
+
+            # 최종적으로 서비스가 살아있어야 배포 성공 처리
+            sudo systemctl is-active --quiet "$SERVICE"
+            echo "=== Deploy succeeded: service is active ==="
