@@ -40,6 +40,7 @@ jobs:
             echo "ERROR: No jar produced in build/libs"; exit 1
           fi
 
+      # 1) jar들을 "incoming"으로 업로드 (파일명 변해도 상관없게)
       - name: Upload jars to VM (incoming)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -50,6 +51,7 @@ jobs:
           target: "/opt/attendance-api/incoming/"
           overwrite: true
 
+      # 2) VM에서 정확히 app.jar로 교체 + 서비스 재시작 + 실패 시 원인 로그 출력
       - name: Activate app.jar and restart service (with logs)
         uses: appleboy/ssh-action@v1.0.3
         with:
