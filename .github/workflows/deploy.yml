@@ -40,7 +40,6 @@ jobs:
             echo "ERROR: No jar produced in build/libs"; exit 1
           fi
 
-      # 1) jar들을 "incoming"으로 업로드 (파일명 변해도 상관없게)
       - name: Upload jars to VM (incoming)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -51,7 +50,6 @@ jobs:
           target: "/opt/attendance-api/incoming/"
           overwrite: true
 
-      # 2) VM에서 정확히 app.jar로 교체 + 서비스 재시작 + 실패 시 원인 로그 출력
       - name: Activate app.jar and restart service (with logs)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -69,20 +67,19 @@ jobs:
             sudo mkdir -p "$INCOMING"
             sudo chown -R "$USER":"$USER" "$APP_DIR"
 
-            echo "=== incoming files ==="
+            echo "=== incoming tree ==="
             ls -lah "$INCOMING" || true
+            ls -lah "$INCOMING/build" || true
+            ls -lah "$INCOMING/build/libs" || true
 
-            # 최신 jar 선택 (여러 개 있어도 최신 하나만)
-            JAR="$(ls -t "$INCOMING"/*.jar | head -n 1)"
+            JAR="$(ls -t "$INCOMING"/build/libs/*.jar | head -n 1)"
             echo "Selected jar: $JAR"
 
-            # 기존 app.jar 백업
             if [ -f "$APP_DIR/app.jar" ]; then
               cp -f "$APP_DIR/app.jar" "$APP_DIR/app.jar.bak"
               echo "Backed up existing app.jar -> app.jar.bak"
             fi
 
-            # app.jar로 교체
             cp -f "$JAR" "$APP_DIR/app.jar"
 
             echo "=== app.jar info ==="
@@ -101,6 +98,5 @@ jobs:
             echo "=== smoke test (localhost:8080) ==="
             curl -i --max-time 5 http://127.0.0.1:8080/ || true
 
-            # 최종적으로 서비스가 살아있어야 배포 성공 처리
             sudo systemctl is-active --quiet "$SERVICE"
             echo "=== Deploy succeeded: service is active ==="
