@@ -83,6 +83,15 @@ tasks.named('asciidoctor') {
     dependsOn test
 }
 
+tasks.named('bootJar') {
+    archiveFileName = 'attendance-api.jar'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+
 spotless {
     java {
         googleJavaFormat().aosp()
