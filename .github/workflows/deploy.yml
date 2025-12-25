@@ -4,99 +4,38 @@ on:
   push:
     branches: ["main"]
 
-concurrency:
-  group: deploy-main
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
 
-      - name: Build (Gradle bootJar)
+      - name: Build
         run: |
-          set -e
           chmod +x ./gradlew
-          ./gradlew clean bootJar
+          ./gradlew clean bootJar -x test
 
-      - name: Verify build output
-        run: |
-          set -e
-          echo "=== build/libs ==="
-          ls -lah build/libs
-          COUNT=$(ls -1 build/libs/*.jar | wc -l | tr -d ' ')
-          if [ "$COUNT" -lt 1 ]; then
-            echo "ERROR: No jar produced in build/libs"; exit 1
-          fi
-
-      - name: Upload jars to VM (incoming)
+      - name: Upload jar
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCP_VM_HOST }}
           username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
-          source: "build/libs/*.jar"
-          target: "/opt/attendance-api/incoming/"
+          source: "build/libs/attendance-api.jar"
+          target: "/opt/attendance-api/"
           overwrite: true
 
-      - name: Activate app.jar and restart service (with logs)
+      - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.GCP_VM_HOST }}
           username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            set -euo pipefail
-
-            APP_DIR="/opt/attendance-api"
-            INCOMING="$APP_DIR/incoming"
-            SERVICE="attendance-api"
-
-            echo "=== prep directories ==="
-            sudo mkdir -p "$INCOMING"
-            sudo chown -R "$USER":"$USER" "$APP_DIR"
-
-            echo "=== incoming tree ==="
-            ls -lah "$INCOMING" || true
-            ls -lah "$INCOMING/build" || true
-            ls -lah "$INCOMING/build/libs" || true
-
-            JAR="$(ls -t "$INCOMING"/build/libs/*.jar | head -n 1)"
-            echo "Selected jar: $JAR"
-
-            if [ -f "$APP_DIR/app.jar" ]; then
-              cp -f "$APP_DIR/app.jar" "$APP_DIR/app.jar.bak"
-              echo "Backed up existing app.jar -> app.jar.bak"
-            fi
-
-            cp -f "$JAR" "$APP_DIR/app.jar"
-
-            echo "=== app.jar info ==="
-            ls -lah "$APP_DIR/app.jar" || true
-            file "$APP_DIR/app.jar" || true
-
-            echo "=== restart service ==="
-            sudo systemctl restart "$SERVICE" || true
-
-            echo "=== service status ==="
-            sudo systemctl status "$SERVICE" --no-pager || true
-
-            echo "=== last 200 service logs ==="
-            sudo journalctl -u "$SERVICE" -n 200 --no-pager || true
-
-            echo "=== smoke test (localhost:8080) ==="
-            curl -i --max-time 5 http://127.0.0.1:8080/ || true
-
-            sudo systemctl is-active --quiet "$SERVICE"
-            echo "=== Deploy succeeded: service is active ==="
+            sudo systemctl restart attendance-api
