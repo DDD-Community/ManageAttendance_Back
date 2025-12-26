@@ -39,7 +39,8 @@ public class UserService {
             final String qrCode,
             final Long generationId,
             final Long teamId,
-            final JobRole jobRole) {
+            final JobRole jobRole,
+            final List<ManagerRole> managerRoles) {
         final String userName = name != null && !name.trim().isEmpty() ? name.trim() : "User";
         return userRepository.save(
                 User.registerUser(
@@ -50,7 +51,8 @@ public class UserService {
                         OAuthProvider.NONE,
                         null,
                         null,
-                        jobRole));
+                        jobRole,
+                        managerRoles));
     }
 
     @Transactional
@@ -62,10 +64,19 @@ public class UserService {
             final String qrCode,
             final Long generationId,
             final Long teamId,
-            final JobRole jobRole) {
+            final JobRole jobRole,
+            final List<ManagerRole> managerRoles) {
         User newUser =
                 User.registerUser(
-                        name, qrCode, generationId, teamId, provider, oauthId, email, jobRole);
+                        name,
+                        qrCode,
+                        generationId,
+                        teamId,
+                        provider,
+                        oauthId,
+                        email,
+                        jobRole,
+                        managerRoles);
         return userRepository.save(newUser);
     }
 }

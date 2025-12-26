@@ -1,5 +1,7 @@
 package com.ddd.manage_attendance.core.config.security;
 
+import com.ddd.manage_attendance.core.auth.OAuthAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,10 +9,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final OAuthAuthenticationFilter oauthAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -24,7 +30,9 @@ public class SecurityConfig {
                                 headers.frameOptions(
                                         HeadersConfigurer.FrameOptionsConfig
                                                 ::sameOrigin) // H2 콘솔 위해 필요
-                        );
+                        )
+                .addFilterBefore(
+                        oauthAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
