@@ -1,10 +1,14 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.domain.auth.api.dto.LoginResponse;
+import com.ddd.manage_attendance.domain.auth.api.dto.RefreshTokenResponse;
+import com.ddd.manage_attendance.domain.auth.infrastructure.jwt.TokenProvider;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthFacade {
     private final OAuthServiceResolver oauthServiceResolver;
     private final UserService userService;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     @Transactional
     public LoginResponse login(
@@ -26,10 +35,64 @@ public class AuthFacade {
                 userService.findByOAuthProviderAndOAuthId(provider, oauthUserInfo.getSub());
 
         if (existingUser.isPresent()) {
-            return LoginResponse.from(existingUser.get(), false);
+            User user = existingUser.get();
+            String accessToken = tokenProvider.createAccessToken(user.getId());
+            String refreshToken = tokenProvider.createRefreshToken(user.getId());
+
+            saveRefreshToken(user.getId(), refreshToken);
+
+            return LoginResponse.from(user, accessToken, refreshToken, false);
         }
 
-        return new LoginResponse(null, null, null, null, "회원가입 필요", true);
+        return new LoginResponse(null, null, null, null, "회원가입 필요", true, null, null);
+    }
+
+    @Transactional
+    public RefreshTokenResponse refresh(final String refreshToken) {
+        RefreshToken storedToken =
+                refreshTokenRepository
+                        .findByToken(refreshToken)
+                        .orElseThrow(InvalidTokenException::new);
+
+        if (storedToken.isExpired()) {
+            refreshTokenRepository.delete(storedToken);
+            throw new ExpiredTokenException();
+        }
+
+        if (!tokenProvider.validateToken(refreshToken)) {
+            refreshTokenRepository.delete(storedToken);
+            throw new InvalidTokenException();
+        }
+
+        refreshTokenRepository.delete(storedToken);
+
+        final Long userId = storedToken.getUserId();
+        final User user = userService.getUser(userId);
+
+        final String newAccessToken = tokenProvider.createAccessToken(user.getId());
+        final String newRefreshToken = tokenProvider.createRefreshToken(user.getId());
+
+        saveRefreshToken(userId, newRefreshToken);
+
+        return RefreshTokenResponse.from(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(final Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
+    }
+
+    private void saveRefreshToken(final Long userId, final String refreshToken) {
+        refreshTokenRepository.deleteByUserId(userId);
+
+        RefreshToken newRefreshToken =
+                RefreshToken.builder()
+                        .userId(userId)
+                        .token(refreshToken)
+                        .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds))
+                        .build();
+
+        refreshTokenRepository.save(newRefreshToken);
     }
 
     private void validateOAuthUserInfo(final OAuthUserInfo oauthUserInfo) {

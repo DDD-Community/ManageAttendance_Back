@@ -1,6 +1,6 @@
 package com.ddd.manage_attendance.core.config.security;
 
-import com.ddd.manage_attendance.core.auth.OAuthAuthenticationFilter;
+import com.ddd.manage_attendance.core.auth.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final OAuthAuthenticationFilter oauthAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,7 +32,7 @@ public class SecurityConfig {
                                                 ::sameOrigin) // H2 콘솔 위해 필요
                         )
                 .addFilterBefore(
-                        oauthAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

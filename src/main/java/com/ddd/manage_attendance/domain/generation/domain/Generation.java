@@ -1,4 +1,4 @@
-package com.ddd.manage_attendance.domain.auth.domain;
+package com.ddd.manage_attendance.domain.generation.domain;
 
 import com.ddd.manage_attendance.core.common.BaseEntity;
 import jakarta.persistence.Column;

@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.core.common.BaseEntity;
+import com.ddd.manage_attendance.domain.generation.domain.Generation;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

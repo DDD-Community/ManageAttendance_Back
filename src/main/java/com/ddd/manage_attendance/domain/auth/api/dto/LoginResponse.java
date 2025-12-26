@@ -9,14 +9,19 @@ public record LoginResponse(
         String email,
         OAuthProvider oauthProvider,
         String message,
-        boolean isNewUser) {
-    public static LoginResponse from(User user, boolean isNewUser) {
+        boolean isNewUser,
+        String accessToken,
+        String refreshToken) {
+    public static LoginResponse from(
+            User user, String accessToken, String refreshToken, boolean isNewUser) {
         return new LoginResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
                 user.getOauthProvider(),
                 isNewUser ? "회원가입 완료" : "로그인 성공",
-                isNewUser);
+                isNewUser,
+                accessToken,
+                refreshToken);
     }
 }
