@@ -32,8 +32,8 @@ public class Schedule extends BaseEntity {
 
     @NotNull
     @Comment("설명")
-    @Column(name = "desc", nullable = false, columnDefinition = "varchar(100)")
-    private String desc;
+    @Column(name = "description", nullable = false, columnDefinition = "varchar(100)")
+    private String description;
 
     @NotNull
     @Comment("세션 날짜")
