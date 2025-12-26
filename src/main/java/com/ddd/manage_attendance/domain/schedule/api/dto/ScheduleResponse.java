@@ -17,7 +17,7 @@ public record ScheduleResponse(
         return new ScheduleResponse(
                 schedule.getId(),
                 schedule.getName(),
-                schedule.getDesc(),
+                schedule.getDescription(),
                 schedule.getDate().getYear(),
                 schedule.getDate().getMonthValue(),
                 schedule.getDate().getDayOfMonth());
