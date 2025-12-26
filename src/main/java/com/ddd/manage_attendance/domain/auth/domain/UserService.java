@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.core.exception.DataNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,29 @@ public class UserService {
         return userRepository.findByOauthProviderAndOauthId(provider, oauthId);
     }
 
+    @Transactional(readOnly = true)
+    public List<User> findUsersByTeamId(final Long teamId) {
+        return userRepository.findAllByTeamId(teamId);
+    }
+
     @Transactional
     public User registerUser(
-            final String name, final String qrCode, final Long generationId, final Long teamId) {
+            final String name,
+            final String qrCode,
+            final Long generationId,
+            final Long teamId,
+            final JobRole jobRole) {
         final String userName = name != null && !name.trim().isEmpty() ? name.trim() : "User";
         return userRepository.save(
                 User.registerUser(
-                        userName, qrCode, generationId, teamId, OAuthProvider.NONE, null, null));
+                        userName,
+                        qrCode,
+                        generationId,
+                        teamId,
+                        OAuthProvider.NONE,
+                        null,
+                        null,
+                        jobRole));
     }
 
     @Transactional
@@ -44,9 +61,11 @@ public class UserService {
             final String name,
             final String qrCode,
             final Long generationId,
-            final Long teamId) {
+            final Long teamId,
+            final JobRole jobRole) {
         User newUser =
-                User.registerUser(name, qrCode, generationId, teamId, provider, oauthId, email);
+                User.registerUser(
+                        name, qrCode, generationId, teamId, provider, oauthId, email, jobRole);
         return userRepository.save(newUser);
     }
 }

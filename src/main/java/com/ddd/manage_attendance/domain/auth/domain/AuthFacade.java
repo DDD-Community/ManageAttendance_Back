@@ -36,9 +36,10 @@ public class AuthFacade {
         final String userName = determineUserName(oauthUserInfo, providedName);
         final String qrCode = qrService.generateQrCodeKey();
 
-        // TODO: OAuth 로그인 시 generationId와 teamId를 어떻게 처리할지 결정 필요
+        // TODO: OAuth 로그인 시 generationId와 teamId, jobRole 를 어떻게 처리할지 결정 필요
         final Long defaultGenerationId = 1L;
         final Long defaultTeamId = 1L;
+        final JobRole jobRole = JobRole.BACKEND;
 
         final User newUser =
                 userService.registerOAuthUser(
@@ -48,7 +49,8 @@ public class AuthFacade {
                         userName,
                         qrCode,
                         defaultGenerationId,
-                        defaultTeamId);
+                        defaultTeamId,
+                        jobRole);
 
         return LoginResponse.from(newUser, true);
     }

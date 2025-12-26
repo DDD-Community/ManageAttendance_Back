@@ -1,9 +1,12 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import com.ddd.manage_attendance.core.exception.DataNotFoundException;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,9 +50,35 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
+    public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
+            final Long scheduleId) {
+        final AttendanceSummary attendanceSummary =
+                attendanceRepository.findStatusSummaryByScheduleId(scheduleId);
+        return AttendanceSummaryResponse.from(attendanceSummary);
+    }
+
+    @Transactional(readOnly = true)
     public List<Attendance> findAllUserAttendancesByScheduleIds(
             final Long userId, final List<Long> scheduleIds) {
         return attendanceRepository.findByUserIdAndScheduleIdIn(userId, scheduleIds);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Attendance> findAllUsersAttendancesByScheduleId(
+            final List<Long> userIds, final Long scheduleId) {
+        return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
+    }
+
+    @Transactional(readOnly = true)
+    public Attendance findAttendanceById(final Long attendanceId) {
+        return attendanceRepository.findById(attendanceId).orElseThrow(DataNotFoundException::new);
+    }
+
+    public List<AttendanceStatusResponse> getStatus() {
+        return Arrays.stream(AttendanceStatus.values())
+                .filter(status -> status != AttendanceStatus.NONE)
+                .map(AttendanceStatusResponse::from)
+                .toList();
     }
 
     private AttendanceStatus decideStatus(final LocalTime scheduleTime, final LocalTime now) {
