@@ -41,12 +41,12 @@ jobs:
           script: |
             # 서버에 .env 파일 생성 (DB 관련 변수는 추후 추가 필요)
             cat <<EOF > /opt/attendance-api/.env
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-            APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
-            APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}
+            JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+            GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}"
+            APPLE_SERVICE_ID="${{ secrets.APPLE_SERVICE_ID }}"
+            APPLE_REDIRECT_URI="${{ secrets.APPLE_REDIRECT_URI }}"
             EOF
             
             # 서비스 재시작
