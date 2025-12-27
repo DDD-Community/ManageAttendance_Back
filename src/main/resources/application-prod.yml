@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: ManageAttendance
   datasource:
     url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul
     username: ${DB_USER}
@@ -34,6 +36,6 @@ apple:
     redirect-uri: ${APPLE_REDIRECT_URI:}
 
 jwt:
-  secret: ${JWT_SECRET:}
+  secret: ${JWT_SECRET:dGhpcy1pcy1hLXZlcnktc3Ryb25nLXNlY3JldC1rZXktZm9yLXRlc3RpbmctcHVycG9zZXMtb25seS1wbGVhc2UtZG8tbm90LXVzZS10aGlzLWluLXByb2R1Y3Rpb24=}
   access-token-validity-in-seconds: 3600 # 1 hour
   refresh-token-validity-in-seconds: 1209600 # 14 days
