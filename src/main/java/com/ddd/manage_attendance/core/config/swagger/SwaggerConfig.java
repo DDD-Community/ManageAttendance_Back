@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT")
-class SwaggerConfig {
+public class SwaggerConfig {
 
     @Bean
     public OpenAPI apiConfig() {
