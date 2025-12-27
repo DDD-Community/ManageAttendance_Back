@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
@@ -30,4 +31,9 @@ public class Generation extends BaseEntity {
     @Comment("기수 이름")
     @Column(name = "name", nullable = false, columnDefinition = "varchar(5)")
     private String name;
+
+    @Builder
+    public Generation(String name) {
+        this.name = name;
+    }
 }

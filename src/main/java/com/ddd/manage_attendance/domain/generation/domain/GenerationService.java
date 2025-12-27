@@ -22,4 +22,10 @@ public class GenerationService {
         }
         return generationRepository.findById(generationId).map(Generation::getName).orElse(null);
     }
+
+    @Transactional
+    public Long createGeneration(String name) {
+        Generation generation = Generation.builder().name(name).build();
+        return generationRepository.save(generation).getId();
+    }
 }
