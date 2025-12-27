@@ -16,7 +16,7 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Build
+      - name: Build with Gradle
         run: |
           chmod +x ./gradlew
           ./gradlew clean bootJar -x test
@@ -29,6 +29,7 @@ jobs:
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           source: "build/libs/attendance-api.jar"
           target: "/opt/attendance-api/"
+          strip_components: 2
           overwrite: true
 
       - name: Restart service
@@ -38,7 +39,7 @@ jobs:
           username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            # 서버에 .env 파일 생성
+            # 서버에 .env 파일 생성 (DB 관련 변수는 추후 추가 필요)
             cat <<EOF > /opt/attendance-api/.env
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
@@ -46,11 +47,6 @@ jobs:
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
             APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASS=${{ secrets.DB_PASS }}
             EOF
             
             # 서비스 재시작
