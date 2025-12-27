@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,13 +27,13 @@ public class AdminMyPageController {
     @GetMapping("/schedules/{scheduleId}/attendances")
     @Operation(summary = "기수 출석 현황 요약 조회", description = "기수 출석 현황 요약을 조회 합니다.")
     public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
-            Long userId, @PathVariable @Positive final Long scheduleId) {
+            @AuthenticationPrincipal Long userId, @PathVariable @Positive final Long scheduleId) {
         return attendanceFacade.getGenerationAttendanceSummaryByScheduleId(userId, scheduleId);
     }
 
     @GetMapping("/generations/teams")
     @Operation(summary = "현재 기수 팀 이름 조회", description = "현재 기수 팀 이름을 조회 합니다.")
-    public List<TeamResponse> getCurrentGenerationTeams(Long userId) {
+    public List<TeamResponse> getCurrentGenerationTeams(@AuthenticationPrincipal Long userId) {
         return teamFacade.getCurrentGenerationTeams(userId);
     }
 

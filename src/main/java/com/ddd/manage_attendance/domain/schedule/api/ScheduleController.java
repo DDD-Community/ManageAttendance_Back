@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +22,7 @@ public class ScheduleController {
 
     @GetMapping
     @Operation(summary = "전체 스케줄 조회", description = "전체 스케줄을 조회 합니다.")
-    public List<ScheduleResponse> getAllSchedule(Long userId) {
+    public List<ScheduleResponse> getAllSchedule(@AuthenticationPrincipal Long userId) {
         return scheduleFacade.getAllScheduleResponses(userId);
     }
 }

@@ -34,28 +34,6 @@ public class UserService {
     }
 
     @Transactional
-    public User registerUser(
-            final String name,
-            final String qrCode,
-            final Long generationId,
-            final Long teamId,
-            final JobRole jobRole,
-            final List<ManagerRole> managerRoles) {
-        final String userName = name != null && !name.trim().isEmpty() ? name.trim() : "User";
-        return userRepository.save(
-                User.registerUser(
-                        userName,
-                        qrCode,
-                        generationId,
-                        teamId,
-                        OAuthProvider.NONE,
-                        null,
-                        null,
-                        jobRole,
-                        managerRoles));
-    }
-
-    @Transactional
     public User registerOAuthUser(
             final OAuthProvider provider,
             final String oauthId,
@@ -78,5 +56,17 @@ public class UserService {
                         jobRole,
                         managerRoles);
         return userRepository.save(newUser);
+    }
+
+    @Transactional
+    public void updateUser(
+            final Long userId,
+            final String name,
+            final Long generationId,
+            final Long teamId,
+            final JobRole jobRole,
+            final List<ManagerRole> managerRoles) {
+        User user = getUser(userId);
+        user.updateProfile(name, generationId, teamId, jobRole, managerRoles);
     }
 }

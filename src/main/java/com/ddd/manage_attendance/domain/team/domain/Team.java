@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,7 +15,13 @@ import org.hibernate.annotations.Comment;
 
 @Getter
 @Entity
-@Table(name = "team")
+@Table(
+        name = "team",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "UK_team_name_generation_id",
+                    columnNames = {"name", "generation_id"})
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Team {
     @Id

@@ -124,4 +124,27 @@ public class User extends BaseEntity {
                 .managerRoles(managerRoles)
                 .build();
     }
+
+    public void updateProfile(
+            String name,
+            Long generationId,
+            Long teamId,
+            JobRole job,
+            List<ManagerRole> managerRoles) {
+        this.name = name;
+        this.generationId = generationId;
+        this.teamId = teamId;
+        this.job = job;
+        this.managerRoles.clear();
+        if (managerRoles != null) {
+            this.managerRoles.addAll(managerRoles);
+        }
+    }
+
+    public List<ManagerRole> getManagerRolesOrNull() {
+        if (managerRoles == null || managerRoles.isEmpty()) {
+            return null;
+        }
+        return managerRoles;
+    }
 }
