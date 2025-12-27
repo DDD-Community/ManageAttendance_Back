@@ -21,3 +21,19 @@ spring:
 logging:
   level:
     root: INFO
+
+google:
+  auth:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:}
+
+apple:
+  auth:
+    service-id: ${APPLE_SERVICE_ID:}
+    redirect-uri: ${APPLE_REDIRECT_URI:}
+
+jwt:
+  secret: ${JWT_SECRET:}
+  access-token-validity-in-seconds: 3600 # 1 hour
+  refresh-token-validity-in-seconds: 1209600 # 14 days
