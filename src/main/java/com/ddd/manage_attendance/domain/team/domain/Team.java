@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
@@ -38,4 +39,10 @@ public class Team {
     @Comment("기수 Id")
     @Column(name = "generation_id", columnDefinition = "bigint")
     private Long generationId;
+
+    @Builder
+    public Team(String name, Long generationId) {
+        this.name = name;
+        this.generationId = generationId;
+    }
 }

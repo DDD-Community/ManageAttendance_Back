@@ -27,4 +27,10 @@ public class TeamService {
         }
         return teamRepository.findById(teamId).map(Team::getName).orElse(null);
     }
+
+    @Transactional
+    public Long createTeam(String name, Long generationId) {
+        Team team = Team.builder().name(name).generationId(generationId).build();
+        return teamRepository.save(team).getId();
+    }
 }
