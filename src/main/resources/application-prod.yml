@@ -39,3 +39,8 @@ jwt:
   secret: ${JWT_SECRET:}
   access-token-validity-in-seconds: 3600 # 1 hour
   refresh-token-validity-in-seconds: 1209600 # 14 days
+
+springdoc:
+  swagger-ui:
+    url: https://api.dddstudy.site/v3/api-docs
+    oauth2-redirect-url: https://api.dddstudy.site/swagger-ui/oauth2-redirect.html
