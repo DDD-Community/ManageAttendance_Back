@@ -1,11 +1,14 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.domain.auth.api.dto.LoginResponse;
+import com.ddd.manage_attendance.domain.auth.api.dto.RefreshTokenResponse;
+import com.ddd.manage_attendance.domain.auth.infrastructure.jwt.TokenProvider;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
-import com.ddd.manage_attendance.domain.qr.domain.QrService;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthFacade {
     private final OAuthServiceResolver oauthServiceResolver;
     private final UserService userService;
-    private final QrService qrService;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInSeconds;
 
     @Transactional
     public LoginResponse login(
@@ -24,53 +31,68 @@ public class AuthFacade {
 
         validateOAuthUserInfo(oauthUserInfo);
 
-        // 기존 사용자 확인
         final Optional<User> existingUser =
                 userService.findByOAuthProviderAndOAuthId(provider, oauthUserInfo.getSub());
 
         if (existingUser.isPresent()) {
-            return LoginResponse.from(existingUser.get(), false);
+            User user = existingUser.get();
+            String accessToken = tokenProvider.createAccessToken(user.getId());
+            String refreshToken = tokenProvider.createRefreshToken(user.getId());
+
+            saveRefreshToken(user.getId(), refreshToken);
+
+            return LoginResponse.from(user, accessToken, refreshToken, false);
         }
 
-        // 새 사용자 등록 (Facade가 여러 Service 조율)
-        final String userName = determineUserName(oauthUserInfo, providedName);
-        final String qrCode = qrService.generateQrCodeKey();
-
-        // TODO: OAuth 로그인 시 generationId와 teamId, jobRole 를 어떻게 처리할지 결정 필요
-        final Long defaultGenerationId = 1L;
-        final Long defaultTeamId = 1L;
-        final JobRole jobRole = JobRole.BACKEND;
-
-        final User newUser =
-                userService.registerOAuthUser(
-                        provider,
-                        oauthUserInfo.getSub(),
-                        oauthUserInfo.getEmail(),
-                        userName,
-                        qrCode,
-                        defaultGenerationId,
-                        defaultTeamId,
-                        jobRole);
-
-        return LoginResponse.from(newUser, true);
+        return new LoginResponse(null, null, null, null, "회원가입 필요", true, null, null);
     }
 
-    private String determineUserName(final OAuthUserInfo oauthUserInfo, final String providedName) {
-        if (providedName != null && !providedName.trim().isEmpty()) {
-            return providedName.trim();
+    @Transactional
+    public RefreshTokenResponse refresh(final String refreshToken) {
+        RefreshToken storedToken =
+                refreshTokenRepository
+                        .findByToken(refreshToken)
+                        .orElseThrow(InvalidTokenException::new);
+
+        if (storedToken.isExpired()) {
+            refreshTokenRepository.delete(storedToken);
+            throw new ExpiredTokenException();
         }
 
-        final String oauthName = oauthUserInfo.getName();
-        if (oauthName != null && !oauthName.trim().isEmpty()) {
-            return oauthName.trim();
+        if (!tokenProvider.validateToken(refreshToken)) {
+            refreshTokenRepository.delete(storedToken);
+            throw new InvalidTokenException();
         }
 
-        final String email = oauthUserInfo.getEmail();
-        if (email != null && email.contains("@")) {
-            return email.split("@")[0];
-        }
+        refreshTokenRepository.delete(storedToken);
 
-        return "User";
+        final Long userId = storedToken.getUserId();
+        final User user = userService.getUser(userId);
+
+        final String newAccessToken = tokenProvider.createAccessToken(user.getId());
+        final String newRefreshToken = tokenProvider.createRefreshToken(user.getId());
+
+        saveRefreshToken(userId, newRefreshToken);
+
+        return RefreshTokenResponse.from(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(final Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
+    }
+
+    private void saveRefreshToken(final Long userId, final String refreshToken) {
+        refreshTokenRepository.deleteByUserId(userId);
+
+        RefreshToken newRefreshToken =
+                RefreshToken.builder()
+                        .userId(userId)
+                        .token(refreshToken)
+                        .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds))
+                        .build();
+
+        refreshTokenRepository.save(newRefreshToken);
     }
 
     private void validateOAuthUserInfo(final OAuthUserInfo oauthUserInfo) {

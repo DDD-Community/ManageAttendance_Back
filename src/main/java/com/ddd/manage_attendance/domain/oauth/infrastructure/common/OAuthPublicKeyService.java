@@ -14,6 +14,7 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,15 +26,38 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class OAuthPublicKeyService {
     private static final ECParameterSpec EC_PARAMETER_SPEC = createECParameterSpec();
+    private static final long CACHE_TTL_SECONDS = 86400;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final Map<String, PublicKey> publicKeyCache = new ConcurrentHashMap<>();
+    private final Map<String, CachedPublicKey> publicKeyCache = new ConcurrentHashMap<>();
 
     public PublicKey getPublicKey(String kid, String publicKeyUrl, String provider) {
         String cacheKey = provider + ":" + kid;
-        return publicKeyCache.computeIfAbsent(
-                cacheKey, k -> fetchPublicKey(kid, publicKeyUrl, provider));
+        CachedPublicKey cachedKey = publicKeyCache.get(cacheKey);
+
+        if (cachedKey != null && !isExpired(cachedKey)) {
+            return cachedKey.publicKey();
+        }
+
+        return fetchAndCachePublicKey(kid, publicKeyUrl, provider, cacheKey);
+    }
+
+    private synchronized PublicKey fetchAndCachePublicKey(
+            String kid, String publicKeyUrl, String provider, String cacheKey) {
+        CachedPublicKey cachedKey = publicKeyCache.get(cacheKey);
+        if (cachedKey != null && !isExpired(cachedKey)) {
+            return cachedKey.publicKey();
+        }
+
+        PublicKey publicKey = fetchPublicKey(kid, publicKeyUrl, provider);
+        publicKeyCache.put(
+                cacheKey, new CachedPublicKey(publicKey, Instant.now().getEpochSecond()));
+        return publicKey;
+    }
+
+    private boolean isExpired(CachedPublicKey cachedKey) {
+        return Instant.now().getEpochSecond() - cachedKey.cachedTime() > CACHE_TTL_SECONDS;
     }
 
     private PublicKey fetchPublicKey(String kid, String publicKeyUrl, String provider) {
@@ -132,4 +156,6 @@ public class OAuthPublicKeyService {
             throw new RuntimeException("EC ParameterSpec 생성에 실패했습니다.", e);
         }
     }
+
+    private record CachedPublicKey(PublicKey publicKey, long cachedTime) {}
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,13 +21,15 @@ public class MyPageController {
 
     @GetMapping("/attendances")
     @Operation(summary = "내 출석 현황 요약 조회", description = "내 출석 현황 요약을 조회 합니다.")
-    public AttendanceSummaryResponse getMyAttendanceSummary(final Long userId) {
+    public AttendanceSummaryResponse getMyAttendanceSummary(
+            @AuthenticationPrincipal final Long userId) {
         return attendanceFacade.getMyAttendanceSummary(userId);
     }
 
     @GetMapping("/schedules")
     @Operation(summary = "내 스케줄/출석 현황 조회", description = "전체 스케줄/출석 현황을 조회 합니다.")
-    public List<ScheduleWithAttendanceResponse> getAllMySchedules(Long userId) {
+    public List<ScheduleWithAttendanceResponse> getAllMySchedules(
+            @AuthenticationPrincipal Long userId) {
         return attendanceFacade.getAllMySchedules(userId);
     }
 }
