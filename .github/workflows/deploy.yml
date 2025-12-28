@@ -21,7 +21,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean bootJar -x test
 
-      - name: Upload jar
+      # - name: Upload jar
       #   uses: appleboy/scp-action@v0.1.7
       #   with:
       #     host: ${{ secrets.GCP_VM_HOST }}
