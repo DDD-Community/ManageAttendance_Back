@@ -37,6 +37,11 @@ jobs:
           strip_components: 2
           overwrite: true
 
+      - name: Debug jars
+        run: |
+          ls -al /opt/attendance-api
+          sha256sum /opt/attendance-api/*.jar
+
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
