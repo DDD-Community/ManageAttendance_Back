@@ -7,7 +7,9 @@ public enum JobRole {
     BACKEND("BE"),
     FRONTEND("FE"),
     DESIGNER("PM"),
-    PM("PD");
+    PM("PD"),
+    ANDROID("AND"),
+    IOS("IOS");
 
     private final String description;
 
