@@ -21,6 +21,11 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean bootJar -x test
 
+      - name: Debug jars
+        run: |
+          ls -al build/libs
+          sha256sum build/libs/*.jar
+
       - name: Upload jar
         uses: appleboy/scp-action@v0.1.7
         with:
