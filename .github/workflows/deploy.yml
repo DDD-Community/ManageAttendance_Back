@@ -21,11 +21,6 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean bootJar -x test
 
-      - name: Debug jars
-        run: |
-          ls -al build/libs
-          sha256sum build/libs/*.jar
-
       - name: Upload jar
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -37,25 +32,43 @@ jobs:
           strip_components: 2
           overwrite: true
 
-      - name: Debug jars
-        run: |
-          ls -al /opt/attendance-api
-          sha256sum /opt/attendance-api/*.jar
-
-      - name: Restart service
+      - name: Verify on VM (CRITICAL)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.GCP_VM_HOST }}
           username: ${{ secrets.GCP_VM_USER }}
           key: ${{ secrets.GCP_VM_SSH_KEY }}
           script: |
-            cat <<'EOF' | sudo tee /opt/attendance-api/.env > /dev/null
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-            APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
-            APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}
-            EOF
-            
+            set -e
+
+            echo "=== JAR files on VM ==="
+            ls -al /opt/attendance-api
+            sha256sum /opt/attendance-api/*.jar
+
+            echo "=== systemd service file ==="
+            sudo systemctl cat attendance-api
+
+            echo "=== service status ==="
             sudo systemctl restart attendance-api
+            sleep 2
+            sudo systemctl status attendance-api -n 50
+
+            echo "=== running java processes ==="
+            ps -ef | grep java | grep attendance || true
+
+      # - name: Restart service
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.GCP_VM_HOST }}
+      #     username: ${{ secrets.GCP_VM_USER }}
+      #     key: ${{ secrets.GCP_VM_SSH_KEY }}
+      #     script: |
+      #       cat <<'EOF' | sudo tee /opt/attendance-api/.env > /dev/null
+      #       JWT_SECRET=${{ secrets.JWT_SECRET }}
+      #       GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+      #       GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+      #       GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+      #       APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
+      #       APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}
+      #       EOF
+      #       sudo systemctl restart attendance-api
