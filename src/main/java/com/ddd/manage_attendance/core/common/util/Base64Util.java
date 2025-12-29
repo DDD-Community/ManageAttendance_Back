@@ -9,11 +9,18 @@ public final class Base64Util {
     }
 
     public static String decodeBase64UrlToString(String encoded) {
-        return new String(Base64.getUrlDecoder().decode(encoded));
+        String paddedEncoded = addPadding(encoded);
+        return new String(Base64.getUrlDecoder().decode(paddedEncoded));
     }
 
     public static BigInteger decodeBase64UrlToBigInteger(String base64String) {
-        byte[] bytes = Base64.getUrlDecoder().decode(base64String);
+        String paddedEncoded = addPadding(base64String);
+        byte[] bytes = Base64.getUrlDecoder().decode(paddedEncoded);
         return new BigInteger(1, bytes);
+    }
+
+    private static String addPadding(String base64) {
+        int paddingCount = (4 - (base64.length() % 4)) % 4;
+        return base64 + "=".repeat(paddingCount);
     }
 }
