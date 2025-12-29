@@ -59,6 +59,9 @@ public class OAuthTokenParser {
         if (token == null || token.trim().isEmpty()) {
             throw new OAuthTokenValidationException(provider, "토큰이 비어있습니다.");
         }
+        if (token.toLowerCase().startsWith("bearer ")) {
+            throw new OAuthTokenValidationException(provider, "토큰은 'Bearer ' 접두사 없이 전송되어야 합니다.");
+        }
     }
 
     private String[] splitToken(String token, String provider) {
