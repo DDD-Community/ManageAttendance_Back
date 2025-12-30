@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceRepository;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserInfoResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserQrResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserRegisterRequest;
@@ -15,9 +16,11 @@ import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.team.exception.TeamNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserFacade {
@@ -27,6 +30,7 @@ public class UserFacade {
     private final InvitationService invitationService;
     private final GenerationService generationService;
     private final TeamService teamService;
+    private final AttendanceRepository attendanceRepository;
     private static final int DEFAULT_QR_SIZE = 300;
 
     @Transactional
@@ -117,5 +121,17 @@ public class UserFacade {
                 }
             }
         }
+    }
+
+    @Transactional
+    public void withdrawUser(final Long userId, final String oauthToken) {
+        User user = userService.getUser(userId);
+
+        if (oauthToken != null && !oauthToken.isBlank() && user.getOauthProvider() != null) {
+            oauthServiceResolver.resolve(user.getOauthProvider()).revoke(oauthToken);
+        }
+
+        attendanceRepository.deleteByUserId(userId);
+        userService.deleteUser(userId);
     }
 }

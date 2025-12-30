@@ -69,4 +69,9 @@ public class UserService {
         User user = getUser(userId);
         user.updateProfile(name, generationId, teamId, jobRole, managerRoles);
     }
+
+    @Transactional
+    public void deleteUser(final Long userId) {
+        userRepository.deleteById(userId);
+    }
 }
