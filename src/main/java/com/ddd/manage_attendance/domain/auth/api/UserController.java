@@ -51,4 +51,14 @@ public class UserController {
             @Valid @RequestBody final UserUpdateRequest request) {
         return userFacade.updateUserInfo(userId, request);
     }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/me")
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴를 진행합니다. (OAuth 토큰이 있으면 연결 해제 포함)")
+    public void withdrawUser(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody(required = false)
+                    com.ddd.manage_attendance.domain.auth.api.dto.UserWithdrawRequest request) {
+        String oauthToken = request != null ? request.token() : null;
+        userFacade.withdrawUser(userId, oauthToken);
+    }
 }

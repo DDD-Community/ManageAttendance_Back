@@ -1,10 +1,6 @@
 package com.ddd.manage_attendance.core.exception;
 
-public record ErrorResponse(
-    String code,
-    String message,
-    String detail
-) {
+public record ErrorResponse(String code, String message, String detail) {
     public static ErrorResponse of(String code, String message) {
         return new ErrorResponse(code, message, null);
     }
