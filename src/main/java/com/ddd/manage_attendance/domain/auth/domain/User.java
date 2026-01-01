@@ -62,7 +62,7 @@ public class User extends BaseEntity {
     private Long generationId;
 
     @Comment("팀 Id")
-    @Column(name = "team_id", columnDefinition = "bigint")
+    @Column(name = "team_id", nullable = true, columnDefinition = "bigint")
     private Long teamId;
 
     @Comment("매니저 업무 목록")
