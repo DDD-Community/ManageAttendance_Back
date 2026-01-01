@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import java.util.List;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +22,8 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI apiConfig() {
         return new OpenAPI()
-                .info(new Info().title("출석앱 API").description("DDD 출석앱 SWAGGER UI입니다."));
+                .info(new Info().title("출석앱 API").description("DDD 출석앱 SWAGGER UI입니다."))
+                .addSecurityItem(new SecurityRequirement().addList("JWT"));
     }
 
     @Bean
