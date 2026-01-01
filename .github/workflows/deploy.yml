@@ -57,5 +57,8 @@ jobs:
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
             APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
             APPLE_REDIRECT_URI=${{ secrets.APPLE_REDIRECT_URI }}
+            APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
+            APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}
+            APPLE_PRIVATE_KEY=${{ secrets.APPLE_PRIVATE_KEY }}
             EOF
             sudo systemctl restart attendance-api
