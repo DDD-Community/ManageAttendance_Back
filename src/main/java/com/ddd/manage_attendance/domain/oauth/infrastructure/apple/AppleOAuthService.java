@@ -64,7 +64,7 @@ public class AppleOAuthService implements OAuthService {
 
             restTemplate.postForLocation(url, request);
         } catch (Exception e) {
-            throw new RuntimeException("Apple OAuth 철회 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("Apple OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
         }
     }
 

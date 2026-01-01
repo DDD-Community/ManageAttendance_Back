@@ -25,7 +25,7 @@ public class GoogleOAuthService implements OAuthService {
         try {
             restTemplate.postForLocation(revokeUrl, null);
         } catch (Exception e) {
-            throw new RuntimeException("Google OAuth 철회 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("Google OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
         }
     }
 }

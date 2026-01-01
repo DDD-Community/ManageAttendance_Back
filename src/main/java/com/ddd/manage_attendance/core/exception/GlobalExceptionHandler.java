@@ -69,11 +69,7 @@ public class GlobalExceptionHandler {
                 e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                        ErrorResponse.of(
-                                "INTERNAL_SERVER_ERROR",
-                                "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요.",
-                                getStackTrace(e)));
+                .body(ErrorResponse.of("INTERNAL_SERVER_ERROR", e.getMessage(), getStackTrace(e)));
     }
 
     private String getStackTrace(Exception e) {
