@@ -13,7 +13,7 @@ public record SampleSaveRequest(
                 String title,
         @NotBlank(message = "내용을 입력해주세요.")
                 @Size(max = 200, message = "내용은 최대 {max}자까지 입력 가능합니다.")
-                @Schema(description = "내용", example = "내용입니다.")
+                @Schema(description = "내용", example = "내용입니다!")
                 String content) {
 
     public Sample toEntity() {
