@@ -41,21 +41,32 @@ public class AppleOAuthService implements OAuthService {
     private final AppleTokenValidator appleTokenValidator;
 
     @Override
-    public OAuthUserInfo authenticate(String idToken) {
-        return appleTokenValidator.validate(idToken);
+    public OAuthUserInfo authenticate(String code) {
+        String clientSecret = createClientSecret();
+        AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
+        if (tokenResponse == null || tokenResponse.id_token() == null) {
+            throw new RuntimeException("Apple ID Token 발급 실패");
+        }
+        return appleTokenValidator.validate(tokenResponse.id_token());
     }
 
     @Override
-    public void revoke(String token) {
+    public void revoke(String code) {
         try {
             String clientSecret = createClientSecret();
+            AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
+            
+            if (tokenResponse == null || tokenResponse.access_token() == null) {
+                throw new RuntimeException("Apple Access Token 발급 실패. 응답이 비어있습니다.");
+            }
+
             RestTemplate restTemplate = new RestTemplate();
             String url = "https://appleid.apple.com/auth/revoke";
 
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("client_id", clientId);
             map.add("client_secret", clientSecret);
-            map.add("token", token);
+            map.add("token", tokenResponse.access_token());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -65,6 +76,28 @@ public class AppleOAuthService implements OAuthService {
             restTemplate.postForLocation(url, request);
         } catch (Exception e) {
             throw new RuntimeException("Apple OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
+        }
+    }
+
+    private AppleTokenResponse getAppleToken(String code, String clientSecret) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "https://appleid.apple.com/auth/token";
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("code", code);
+        map.add("grant_type", "authorization_code");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        try {
+            return restTemplate.postForObject(url, request, AppleTokenResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Apple Token 교환 중 오류 발생: " + e.getMessage(), e);
         }
     }
 
@@ -101,11 +134,16 @@ public class AppleOAuthService implements OAuthService {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            int len = privateKeyString != null ? privateKeyString.length() : -1;
-            String start = (privateKeyString != null && privateKeyString.length() > 5) ? privateKeyString.substring(0, 5) : "null";
-            String end = (privateKeyString != null && privateKeyString.length() > 5) ? privateKeyString.substring(privateKeyString.length() - 5) : "null";
-            
-            throw new RuntimeException(String.format("애플 키 파싱 실패! 길이: %d, 앞5: %s, 뒤5: %s, 원인: %s", len, start, end, e.getMessage()), e);
+            throw new RuntimeException("Apple Private Key 파싱 실패. 키 값을 확인해주세요.", e);
         }
     }
+    
+    // 내부 DTO
+    record AppleTokenResponse(
+        String access_token,
+        String token_type,
+        Integer expires_in,
+        String refresh_token,
+        String id_token
+    ) {}
 }
