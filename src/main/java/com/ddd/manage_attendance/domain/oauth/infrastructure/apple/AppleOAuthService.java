@@ -68,7 +68,7 @@ public class AppleOAuthService implements OAuthService {
         }
     }
 
-    private String createClientSecret() throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private String createClientSecret() {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + 300000); // 5 minutes
 
@@ -87,17 +87,25 @@ public class AppleOAuthService implements OAuthService {
                 .compact();
     }
 
-    private PrivateKey getPrivateKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String privateKeyContent =
-                privateKeyString
-                        .replace("\\n", "")
-                        .replace("-----BEGIN PRIVATE KEY-----", "")
-                        .replace("-----END PRIVATE KEY-----", "")
-                        .replaceAll("\\s+", "");
+    private PrivateKey getPrivateKey() {
+        try {
+            String privateKeyContent =
+                    privateKeyString
+                            .replace("\\n", "")
+                            .replace("-----BEGIN PRIVATE KEY-----", "")
+                            .replace("-----END PRIVATE KEY-----", "")
+                            .replaceAll("\\s+", "");
 
-        byte[] encoded = Base64.getDecoder().decode(privateKeyContent);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-        KeyFactory keyFactory = KeyFactory.getInstance("EC");
-        return keyFactory.generatePrivate(keySpec);
+            byte[] encoded = Base64.getDecoder().decode(privateKeyContent);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            return keyFactory.generatePrivate(keySpec);
+        } catch (Exception e) {
+            int len = privateKeyString != null ? privateKeyString.length() : -1;
+            String start = (privateKeyString != null && privateKeyString.length() > 5) ? privateKeyString.substring(0, 5) : "null";
+            String end = (privateKeyString != null && privateKeyString.length() > 5) ? privateKeyString.substring(privateKeyString.length() - 5) : "null";
+            
+            throw new RuntimeException(String.format("애플 키 파싱 실패! 길이: %d, 앞5: %s, 뒤5: %s, 원인: %s", len, start, end, e.getMessage()), e);
+        }
     }
 }
