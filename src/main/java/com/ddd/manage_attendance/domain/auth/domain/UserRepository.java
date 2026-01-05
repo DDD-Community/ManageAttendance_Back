@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("oauthProvider") OAuthProvider oauthProvider, @Param("oauthId") String oauthId);
 
     List<User> findAllByTeamId(Long teamId);
+
+    @Query(value = "SELECT * FROM member", nativeQuery = true)
+    List<java.util.Map<String, Object>> findAllRaw();
 }

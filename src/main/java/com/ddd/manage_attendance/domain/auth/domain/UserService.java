@@ -78,4 +78,8 @@ public class UserService {
     public void deleteUser(final Long userId) {
         userRepository.deleteById(userId);
     }
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getAllUsersRaw() {
+        return userRepository.findAllRaw();
+    }
 }

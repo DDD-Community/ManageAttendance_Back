@@ -156,4 +156,8 @@ public class UserFacade {
         attendanceRepository.deleteByUserId(userId);
         userService.deleteUser(userId);
     }
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getAllUsersRaw() {
+        return userService.getAllUsersRaw();
+    }
 }

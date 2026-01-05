@@ -69,4 +69,9 @@ public class UserController {
         String oauthToken = request != null ? request.token() : null;
         userFacade.withdrawUser(userId, oauthToken);
     }
+    @GetMapping("/debug/all")
+    @Operation(summary = "전체 유저 RAW 조회 (디버깅용)", description = "DB에 있는 모든 유저 데이터를 날것 그대로 조회합니다.")
+    public java.util.List<java.util.Map<String, Object>> getAllUsersRaw() {
+        return userFacade.getAllUsersRaw();
+    }
 }
