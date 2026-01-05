@@ -24,6 +24,6 @@ public class GenerationController {
     @Operation(summary = "기수 생성", description = "새로운 기수를 생성합니다.")
     public ResponseEntity<Long> createGeneration(
             @Valid @RequestBody final GenerationCreateRequest request) {
-        return ResponseEntity.ok(generationService.createGeneration(request.getName()));
+        return ResponseEntity.ok(generationService.createGeneration(request.name()));
     }
 }
