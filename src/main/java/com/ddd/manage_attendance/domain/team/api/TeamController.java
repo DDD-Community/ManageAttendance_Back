@@ -23,7 +23,6 @@ public class TeamController {
     @PostMapping
     @Operation(summary = "팀 생성", description = "새로운 팀을 생성합니다.")
     public ResponseEntity<Long> createTeam(@Valid @RequestBody final TeamCreateRequest request) {
-        return ResponseEntity.ok(
-                teamService.createTeam(request.getName(), request.getGenerationId()));
+        return ResponseEntity.ok(teamService.createTeam(request.name(), request.generationId()));
     }
 }

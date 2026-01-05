@@ -26,9 +26,9 @@ public class InvitationController {
             @Valid @RequestBody final InvitationCreateRequest request) {
         return ResponseEntity.ok(
                 invitationService.createInvitation(
-                        request.getCode(),
-                        request.getType(),
-                        request.getGenerationId(),
-                        request.getDescription()));
+                        request.code(),
+                        request.type(),
+                        request.generationId(),
+                        request.description()));
     }
 }
