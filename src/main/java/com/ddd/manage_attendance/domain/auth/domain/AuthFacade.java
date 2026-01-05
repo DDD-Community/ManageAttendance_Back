@@ -36,6 +36,11 @@ public class AuthFacade {
 
         if (existingUser.isPresent()) {
             User user = existingUser.get();
+
+            if (oauthUserInfo.getRefreshToken() != null) {
+                user.updateRefreshToken(oauthUserInfo.getRefreshToken());
+            }
+
             String accessToken = tokenProvider.createAccessToken(user.getId());
             String refreshToken = tokenProvider.createRefreshToken(user.getId());
 

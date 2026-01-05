@@ -28,7 +28,7 @@ public class InvitationService {
                 Invitation.builder()
                         .code(code)
                         .type(type)
-                        .generation(generation)
+                        .generationId(generation.getId())
                         .description(description)
                         .build();
         return invitationRepository.save(invitation).getId();

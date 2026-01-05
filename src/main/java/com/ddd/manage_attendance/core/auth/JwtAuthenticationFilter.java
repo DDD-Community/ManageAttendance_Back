@@ -29,15 +29,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = resolveToken(request);
-
-        if (token != null && tokenProvider.validateToken(token)) {
-            Long userId = tokenProvider.getUserId(token);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        
+        if (token != null) {
+            if (tokenProvider.validateToken(token)) {
+                Long userId = tokenProvider.getUserId(token);
+                // System.out.println("DEBUG: Token valid, userId: " + userId);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // System.out.println("DEBUG: Token invalid");
+            }
+        } else {
+             // System.out.println("DEBUG: No token found");
         }
 
         filterChain.doFilter(request, response);

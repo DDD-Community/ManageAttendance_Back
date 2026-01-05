@@ -1,17 +1,14 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
 import com.ddd.manage_attendance.core.common.BaseEntity;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -33,7 +30,6 @@ public class User extends BaseEntity {
     @Column(name = "id", nullable = false, columnDefinition = "bigint")
     private Long id;
 
-    @NotNull
     @Comment("이름")
     @Column(name = "name", nullable = true, columnDefinition = "varchar(30)")
     private String name;
@@ -56,6 +52,19 @@ public class User extends BaseEntity {
     @Column(unique = true, name = "oauth_id", nullable = true, columnDefinition = "varchar(255)")
     private String oauthId;
 
+    @Comment("Refresh Token")
+    @Column(name = "refresh_token", nullable = true, columnDefinition = "varchar(255)")
+    private String refreshToken;
+
+    @Comment("초대 코드")
+    @Column(name = "invitation_code", nullable = false, columnDefinition = "varchar(50)")
+    private String invitationCode;
+
+    @Comment("유저 역할 (MEMBER/MANAGER)")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false, columnDefinition = "varchar(20)")
+    private UserRole role;
+
     @NotNull
     @Comment("기수 Id")
     @Column(name = "generation_id", columnDefinition = "bigint")
@@ -66,10 +75,8 @@ public class User extends BaseEntity {
     private Long teamId;
 
     @Comment("매니저 업무 목록")
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "user_manager_role", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "varchar(20)")
+    @Convert(converter = ManagerRoleListConverter.class)
+    @Column(name = "manager_roles", columnDefinition = "text")
     private List<ManagerRole> managerRoles = new ArrayList<>();
 
     @NotNull
@@ -88,7 +95,9 @@ public class User extends BaseEntity {
             Long generationId,
             Long teamId,
             JobRole job,
-            List<ManagerRole> managerRoles) {
+            List<ManagerRole> managerRoles,
+            String invitationCode,
+            UserRole role) {
         this.name = name;
         this.email = email;
         this.qrCode = qrCode;
@@ -100,6 +109,8 @@ public class User extends BaseEntity {
         if (managerRoles != null) {
             this.managerRoles.addAll(managerRoles);
         }
+        this.invitationCode = invitationCode;
+        this.role = role;
     }
 
     public static User registerUser(
@@ -111,7 +122,9 @@ public class User extends BaseEntity {
             String oauthId,
             String email,
             JobRole job,
-            List<ManagerRole> managerRoles) {
+            List<ManagerRole> managerRoles,
+            String invitationCode,
+            UserRole role) {
         return User.builder()
                 .name(name)
                 .qrCode(qrCode)
@@ -122,6 +135,8 @@ public class User extends BaseEntity {
                 .job(job)
                 .email(email)
                 .managerRoles(managerRoles)
+                .invitationCode(invitationCode)
+                .role(role)
                 .build();
     }
 
@@ -139,6 +154,10 @@ public class User extends BaseEntity {
         if (managerRoles != null) {
             this.managerRoles.addAll(managerRoles);
         }
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public List<ManagerRole> getManagerRolesOrNull() {

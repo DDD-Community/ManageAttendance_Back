@@ -12,4 +12,8 @@ public interface OAuthUserInfo {
     String getAud();
 
     Long getExp();
+
+    default String getRefreshToken() {
+        return null;
+    }
 }

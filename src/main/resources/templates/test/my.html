@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Page</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .info-row { padding: 10px; border-bottom: 1px solid #eee; }
+        .label { font-weight: bold; width: 120px; display: inline-block; }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 10px; cursor: pointer; margin-top: 20px; }
+        .btn-secondary { background: #6c757d; color: white; border: none; padding: 10px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>My Information</h2>
+    
+    <div id="loading">Loading...</div>
+    <div id="userInfo" class="hidden">
+        <div class="info-row"><span class="label">Name:</span> <span id="uName"></span></div>
+        <div class="info-row"><span class="label">Email:</span> <span id="uEmail"></span></div>
+        <div class="info-row"><span class="label">Generation:</span> <span id="uGen"></span></div>
+        <div class="info-row"><span class="label">Role:</span> <span id="uRole"></span></div>
+        <div class="info-row"><span class="label">Team:</span> <span id="uTeam"></span></div>
+        <div class="info-row"><span class="label">Job:</span> <span id="uJob"></span></div>
+        
+        <div class="info-row">
+            <span class="label">QR Code:</span>
+            <img id="uQr" style="width: 150px; display:block; margin-top:10px;">
+        </div>
+    </div>
+
+    <button class="btn-secondary" onclick="logout()">Logout</button>
+    <button class="btn-danger" onclick="withdraw()">Withdraw (Account Delete)</button>
+</div>
+
+<script>
+    const accessToken = localStorage.getItem('accessToken');
+    
+    // Attempt to retrieve OAuth token stored during login (if available) for revocation
+    const oauthToken = localStorage.getItem('oauth_provider_token') || localStorage.getItem('temp_token'); 
+
+    if (!accessToken) {
+        window.location.href = '/test/login';
+    }
+
+    // Axios Interceptor for JWT
+    axios.interceptors.request.use(config => {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+        return config;
+    });
+
+    // Load Info
+    axios.get('/api/users/me')
+        .then(res => {
+            const u = res.data;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            
+            document.getElementById('uName').innerText = u.name;
+            document.getElementById('uEmail').innerText = u.email;
+            document.getElementById('uGen').innerText = u.generation;
+            document.getElementById('uRole').innerText = u.role; // Assuming field is 'role'
+            document.getElementById('uTeam').innerText = u.team || '-';
+            document.getElementById('uJob').innerText = u.jobRole;
+
+            // Load QR
+            loadQr(u.userId);
+        })
+        .catch(err => {
+            if (err.response && err.response.status === 401) {
+                alert("Session expired");
+                logout();
+            } else {
+                alert("Failed to load info");
+            }
+        });
+
+    function loadQr(userId) {
+         axios.get(`/api/users/${userId}/qr`)
+            .then(res => {
+                document.getElementById('uQr').src = "data:image/png;base64," + res.data.qrImage; 
+            });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/test/login';
+    }
+
+    function withdraw() {
+        if (!confirm("Are you sure you want to withdraw? This cannot be undone.")) return;
+
+        axios.delete('/api/users/me', {
+            data: { token: oauthToken } // Body for DELETE
+        })
+        .then(res => {
+            alert("Withdrawal Successful");
+            logout();
+        })
+        .catch(err => {
+            alert("Withdrawal Failed: " + (err.response ? err.response.data.message : err.message));
+        });
+    }
+</script>
+</body>
+</html>

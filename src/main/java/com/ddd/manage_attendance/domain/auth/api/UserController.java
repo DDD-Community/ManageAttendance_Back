@@ -44,6 +44,9 @@ public class UserController {
     @GetMapping("/me")
     @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 정보를 조회합니다.")
     public UserInfoResponse getMyInfo(@AuthenticationPrincipal Long userId) {
+        if (userId == null) {
+            throw new AccessDeniedException("로그인이 필요합니다.");
+        }
         return userFacade.getUserInfo(userId);
     }
 
