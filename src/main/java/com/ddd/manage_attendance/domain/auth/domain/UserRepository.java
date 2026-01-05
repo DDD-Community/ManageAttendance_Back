@@ -17,4 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "SELECT * FROM member", nativeQuery = true)
     List<java.util.Map<String, Object>> findAllRaw();
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(value = "DELETE FROM member WHERE id = :id", nativeQuery = true)
+    void forceDeleteById(@Param("id") Long id);
 }

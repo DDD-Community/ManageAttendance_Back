@@ -82,4 +82,9 @@ public class UserService {
     public List<java.util.Map<String, Object>> getAllUsersRaw() {
         return userRepository.findAllRaw();
     }
+
+    @Transactional
+    public void forceDeleteUser(Long id) {
+        userRepository.forceDeleteById(id);
+    }
 }

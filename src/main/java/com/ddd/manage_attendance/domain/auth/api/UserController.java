@@ -74,4 +74,10 @@ public class UserController {
     public java.util.List<java.util.Map<String, Object>> getAllUsersRaw() {
         return userFacade.getAllUsersRaw();
     }
+
+    @DeleteMapping("/debug/{id}")
+    @Operation(summary = "유저 강제 삭제 (디버깅용)", description = "ID로 유저를 강제 삭제합니다. (Native Query 사용)")
+    public void forceDeleteUser(@PathVariable Long id) {
+        userFacade.forceDeleteUser(id);
+    }
 }

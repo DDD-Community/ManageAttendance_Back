@@ -160,4 +160,10 @@ public class UserFacade {
     public List<java.util.Map<String, Object>> getAllUsersRaw() {
         return userService.getAllUsersRaw();
     }
+
+    @Transactional
+    public void forceDeleteUser(Long id) {
+        attendanceRepository.deleteByUserId(id); // Delete child data first if possible (though native might bypass persistence context)
+        userService.forceDeleteUser(id);
+    }
 }
