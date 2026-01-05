@@ -163,7 +163,20 @@ public class UserFacade {
 
     @Transactional
     public void forceDeleteUser(Long id) {
-        attendanceRepository.deleteByUserId(id); // Delete child data first if possible (though native might bypass persistence context)
+        attendanceRepository.deleteByUserId(id);
+
+        try {
+            userService.forceDeleteUserManagerRole(id);
+        } catch (Exception e) {
+            log.warn("Force delete user_manager_role failed (ignored): {}", e.getMessage());
+        }
+
+        try {
+            userService.forceDeleteRefreshToken(id);
+        } catch (Exception e) {
+             log.warn("Force delete refresh token failed (ignored): {}", e.getMessage());
+        }
+
         userService.forceDeleteUser(id);
     }
 }

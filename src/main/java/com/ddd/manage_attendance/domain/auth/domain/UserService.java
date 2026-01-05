@@ -83,18 +83,18 @@ public class UserService {
         return userRepository.findAllRaw();
     }
 
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void forceDeleteUserManagerRole(Long id) {
+        userRepository.forceDeleteUserManagerRole(id);
+    }
+
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void forceDeleteRefreshToken(Long id) {
+        userRepository.forceDeleteRefreshToken(id);
+    }
+
     @Transactional
     public void forceDeleteUser(Long id) {
-        try {
-            userRepository.forceDeleteUserManagerRole(id);
-        } catch (Exception e) {
-            // Ignore if table doesn't exist
-        }
-        try {
-            userRepository.forceDeleteRefreshToken(id);
-        } catch (Exception e) {
-            // Ignore if table doesn't exist
-        }
         userRepository.forceDeleteById(id);
     }
 }
