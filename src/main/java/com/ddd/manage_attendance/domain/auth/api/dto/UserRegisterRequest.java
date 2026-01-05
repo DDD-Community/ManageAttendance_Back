@@ -25,5 +25,7 @@ public record UserRegisterRequest(
                 OAuthProvider provider,
         @Schema(description = "인증 토큰", example = "eyJ...") @NotBlank(message = "인증 토큰은 필수입니다.")
                 String token,
+        @Schema(description = "OAuth Refresh Token (선택, 신규가입 시)", example = "r.123...")
+                String oauthRefreshToken,
         @Schema(description = "초대 코드", example = "CODE123") @NotBlank(message = "초대 코드는 필수입니다.")
                 String invitationCode) {}

@@ -43,7 +43,9 @@ public class UserService {
             final Long generationId,
             final Long teamId,
             final JobRole jobRole,
-            final List<ManagerRole> managerRoles) {
+            final List<ManagerRole> managerRoles,
+            final String invitationCode,
+            final UserRole role) {
         User newUser =
                 User.registerUser(
                         name,
@@ -54,7 +56,9 @@ public class UserService {
                         oauthId,
                         email,
                         jobRole,
-                        managerRoles);
+                        managerRoles,
+                        invitationCode,
+                        role);
         return userRepository.save(newUser);
     }
 

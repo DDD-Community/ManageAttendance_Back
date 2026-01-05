@@ -2,12 +2,12 @@ package com.ddd.manage_attendance.domain.oauth.infrastructure.apple;
 
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
+import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
@@ -41,39 +41,53 @@ public class AppleOAuthService implements OAuthService {
     private final AppleTokenValidator appleTokenValidator;
 
     @Override
-    public OAuthUserInfo authenticate(String code) {
+    public OAuthUserInfo authenticate(String codeOrToken) {
+        // 입력값이 JWT(ID Token) 형식인지 확인 (간단히 점 2개 포함 여부로 판단)
+        if (codeOrToken != null && codeOrToken.split("\\.").length == 3) {
+            return (AppleUserInfo) appleTokenValidator.validate(codeOrToken);
+        }
+
         String clientSecret = createClientSecret();
-        AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
-        if (tokenResponse == null || tokenResponse.id_token() == null) {
+        AppleTokenResponse tokenResponse = getAppleToken(codeOrToken, clientSecret);
+        if (tokenResponse == null || tokenResponse.idToken() == null) {
             throw new RuntimeException("Apple ID Token 발급 실패");
         }
-        return appleTokenValidator.validate(tokenResponse.id_token());
+        AppleUserInfo userInfo =
+                (AppleUserInfo) appleTokenValidator.validate(tokenResponse.idToken());
+        userInfo.setRefreshToken(tokenResponse.refreshToken());
+        return userInfo;
     }
 
     @Override
-    public void revoke(String code) {
+    public void revoke(OAuthRevocationRequest request) {
+        // 우선순위: DB에 저장된 Refresh Token > 클라이언트가 준 Token
+        String tokenToRevoke =
+                (request.refreshTokenFromDb() != null)
+                        ? request.refreshTokenFromDb()
+                        : request.tokenFromClient();
+
+        if (tokenToRevoke == null || tokenToRevoke.isBlank()) {
+            log.warn("Apple Revoke failed: No token provided.");
+            return;
+        }
+
         try {
             String clientSecret = createClientSecret();
-            AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
-            
-            if (tokenResponse == null || tokenResponse.access_token() == null) {
-                throw new RuntimeException("Apple Access Token 발급 실패. 응답이 비어있습니다.");
-            }
-
             RestTemplate restTemplate = new RestTemplate();
             String url = "https://appleid.apple.com/auth/revoke";
 
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("client_id", clientId);
             map.add("client_secret", clientSecret);
-            map.add("token", tokenResponse.access_token());
+            map.add("token", tokenToRevoke);
+            map.add("token_type_hint", "refresh_token");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+            HttpEntity<MultiValueMap<String, String>> httpRequest = new HttpEntity<>(map, headers);
 
-            restTemplate.postForLocation(url, request);
+            restTemplate.postForLocation(url, httpRequest);
         } catch (Exception e) {
             throw new RuntimeException("Apple OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
         }
@@ -92,10 +106,10 @@ public class AppleOAuthService implements OAuthService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, String>> httpRequest = new HttpEntity<>(map, headers);
 
         try {
-            return restTemplate.postForObject(url, request, AppleTokenResponse.class);
+            return restTemplate.postForObject(url, httpRequest, AppleTokenResponse.class);
         } catch (Exception e) {
             throw new RuntimeException("Apple Token 교환 중 오류 발생: " + e.getMessage(), e);
         }
@@ -137,13 +151,12 @@ public class AppleOAuthService implements OAuthService {
             throw new RuntimeException("Apple Private Key 파싱 실패. 키 값을 확인해주세요.", e);
         }
     }
-    
+
     // 내부 DTO
     record AppleTokenResponse(
-        String access_token,
-        String token_type,
-        Integer expires_in,
-        String refresh_token,
-        String id_token
-    ) {}
+            @JsonProperty("access_token") String accessToken,
+            @JsonProperty("token_type") String tokenType,
+            @JsonProperty("expires_in") Integer expiresIn,
+            @JsonProperty("refresh_token") String refreshToken,
+            @JsonProperty("id_token") String idToken) {}
 }

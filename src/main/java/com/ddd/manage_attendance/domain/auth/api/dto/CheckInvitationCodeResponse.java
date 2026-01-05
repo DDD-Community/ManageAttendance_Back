@@ -8,10 +8,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record CheckInvitationCodeResponse(
         Long generationId, String generationName, InvitationType type, String description) {
 
-    public static CheckInvitationCodeResponse from(Invitation invitation) {
+    public static CheckInvitationCodeResponse from(Invitation invitation, String generationName) {
         return new CheckInvitationCodeResponse(
-                invitation.getGeneration().getId(),
-                invitation.getGeneration().getName(),
+                invitation.getGenerationId(),
+                generationName,
                 invitation.getType(),
                 invitation.getDescription());
     }

@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.auth.domain.Invitation;
 import com.ddd.manage_attendance.domain.auth.domain.InvitationService;
 import com.ddd.manage_attendance.domain.auth.domain.JobRole;
 import com.ddd.manage_attendance.domain.auth.domain.ManagerRole;
+import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
 import com.ddd.manage_attendance.domain.team.api.dto.TeamResponse;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,12 +28,14 @@ public class OnboardingController {
 
     private final InvitationService invitationService;
     private final TeamService teamService;
+    private final GenerationService generationService;
 
     @GetMapping("/verify-code")
     @Operation(summary = "초대 코드 검증", description = "입력한 초대 코드가 유효한지 확인하고 기수 정보를 반환합니다.")
     public CheckInvitationCodeResponse verifyCode(@RequestParam String code) {
         Invitation invitation = invitationService.verifyCode(code);
-        return CheckInvitationCodeResponse.from(invitation);
+        String generationName = generationService.getGenerationName(invitation.getGenerationId());
+        return CheckInvitationCodeResponse.from(invitation, generationName);
     }
 
     @GetMapping("/jobs")

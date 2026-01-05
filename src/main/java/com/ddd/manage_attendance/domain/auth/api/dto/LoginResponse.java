@@ -9,9 +9,10 @@ public record LoginResponse(
         String email,
         OAuthProvider oauthProvider,
         String message,
-        boolean isNewUser,
+        @com.fasterxml.jackson.annotation.JsonProperty("isNewUser") boolean isNewUser,
         String accessToken,
-        String refreshToken) {
+        String refreshToken,
+        String oauthRefreshToken) {
     public static LoginResponse from(
             User user, String accessToken, String refreshToken, boolean isNewUser) {
         return new LoginResponse(
@@ -22,6 +23,7 @@ public record LoginResponse(
                 isNewUser ? "회원가입 완료" : "로그인 성공",
                 isNewUser,
                 accessToken,
-                refreshToken);
+                refreshToken,
+                null);
     }
 }

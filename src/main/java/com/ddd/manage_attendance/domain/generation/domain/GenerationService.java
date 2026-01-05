@@ -25,7 +25,7 @@ public class GenerationService {
 
     @Transactional
     public Long createGeneration(String name) {
-        Generation generation = Generation.builder().name(name).build();
+        Generation generation = Generation.createGeneration(name);
         return generationRepository.save(generation).getId();
     }
 }

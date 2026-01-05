@@ -7,14 +7,15 @@ import com.ddd.manage_attendance.domain.auth.api.dto.UserRegisterRequest;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserUpdateRequest;
 import com.ddd.manage_attendance.domain.auth.exception.GenerationMismatchException;
 import com.ddd.manage_attendance.domain.auth.exception.InvalidUserRegistrationException;
-import com.ddd.manage_attendance.domain.generation.domain.Generation;
 import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
+import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.team.exception.TeamNotFoundException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,9 @@ public class UserFacade {
         final Invitation invitation = invitationService.verifyCode(request.invitationCode());
         validateTeamAndGeneration(invitation, request.generationId(), request.teamId());
 
+        final UserRole userRole = UserRole.valueOf(invitation.getType().name());
+        validateRoleRequirements(userRole, request.managerRoles(), request.teamId());
+
         final OAuthUserInfo oauthUserInfo =
                 oauthServiceResolver.resolve(request.provider()).authenticate(request.token());
 
@@ -50,10 +54,16 @@ public class UserFacade {
                         oauthUserInfo.getEmail(),
                         request.name(),
                         qrCode,
-                        invitation.getGeneration().getId(),
+                        invitation.getGenerationId(),
                         request.teamId(),
                         request.jobRole(),
-                        request.managerRoles());
+                        request.managerRoles(),
+                        request.invitationCode(),
+                        userRole);
+
+        if (request.oauthRefreshToken() != null && !request.oauthRefreshToken().isBlank()) {
+            user.updateRefreshToken(request.oauthRefreshToken());
+        }
 
         return getUserInfo(user.getId());
     }
@@ -81,12 +91,12 @@ public class UserFacade {
         validateTeamAndGeneration(invitation, request.generationId(), request.teamId());
         validateRoleRequirements(invitation, request);
 
-        final Generation generation = invitation.getGeneration();
+        final Long generationId = invitation.getGenerationId();
 
         userService.updateUser(
                 userId,
                 request.name(),
-                generation.getId(),
+                generationId,
                 request.teamId(),
                 request.jobRole(),
                 request.managerRoles());
@@ -96,12 +106,12 @@ public class UserFacade {
 
     private void validateTeamAndGeneration(
             final Invitation invitation, final Long requestGenerationId, final Long requestTeamId) {
-        if (!invitation.getGeneration().getId().equals(requestGenerationId)) {
+        if (!invitation.getGenerationId().equals(requestGenerationId)) {
             throw new GenerationMismatchException();
         }
         if (requestTeamId != null) {
             Team team = teamService.findById(requestTeamId);
-            if (!team.getGenerationId().equals(invitation.getGeneration().getId())) {
+            if (!team.getGenerationId().equals(invitation.getGenerationId())) {
                 throw new TeamNotFoundException();
             }
         }
@@ -109,14 +119,20 @@ public class UserFacade {
 
     private void validateRoleRequirements(
             final Invitation invitation, final UserUpdateRequest request) {
-        switch (invitation.getType()) {
+        UserRole role = UserRole.valueOf(invitation.getType().name());
+        validateRoleRequirements(role, request.managerRoles(), request.teamId());
+    }
+
+    private void validateRoleRequirements(
+            UserRole role, List<ManagerRole> managerRoles, Long teamId) {
+        switch (role) {
             case MEMBER -> {
-                if (request.teamId() == null) {
+                if (teamId == null) {
                     throw new InvalidUserRegistrationException("멤버는 팀 ID가 필수입니다.");
                 }
             }
             case MANAGER -> {
-                if (request.managerRoles() == null || request.managerRoles().isEmpty()) {
+                if (managerRoles == null || managerRoles.isEmpty()) {
                     throw new InvalidUserRegistrationException("운영진은 역할 목록이 필수입니다.");
                 }
             }
@@ -128,7 +144,13 @@ public class UserFacade {
         User user = userService.getUser(userId);
 
         if (oauthToken != null && !oauthToken.isBlank() && user.getOauthProvider() != null) {
-            oauthServiceResolver.resolve(user.getOauthProvider()).revoke(oauthToken);
+            try {
+                OAuthRevocationRequest revocationRequest =
+                        new OAuthRevocationRequest(oauthToken, user.getRefreshToken());
+                oauthServiceResolver.resolve(user.getOauthProvider()).revoke(revocationRequest);
+            } catch (Exception e) {
+                log.warn("OAuth revocation failed for user {}. Error: {}", userId, e.getMessage());
+            }
         }
 
         attendanceRepository.deleteByUserId(userId);

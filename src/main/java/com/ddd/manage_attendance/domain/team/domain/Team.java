@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.team.domain;
 
+import com.ddd.manage_attendance.core.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.Comment;
                     columnNames = {"name", "generation_id"})
         })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Team {
+public class Team extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, columnDefinition = "bigint")
@@ -40,9 +41,13 @@ public class Team {
     @Column(name = "generation_id", columnDefinition = "bigint")
     private Long generationId;
 
-    @Builder
+    @Builder(access = AccessLevel.PRIVATE)
     public Team(String name, Long generationId) {
         this.name = name;
         this.generationId = generationId;
+    }
+
+    public static Team createTeam(String name, Long generationId) {
+        return Team.builder().name(name).generationId(generationId).build();
     }
 }

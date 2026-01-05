@@ -2,6 +2,7 @@ package com.ddd.manage_attendance.domain.oauth.infrastructure.google;
 
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
+import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,8 @@ public class GoogleOAuthService implements OAuthService {
     }
 
     @Override
-    public void revoke(String token) {
+    public void revoke(OAuthRevocationRequest request) {
+        String token = request.tokenFromClient();
         RestTemplate restTemplate = new RestTemplate();
         String revokeUrl = "https://oauth2.googleapis.com/revoke?token=" + token;
         try {
