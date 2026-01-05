@@ -85,6 +85,16 @@ public class UserService {
 
     @Transactional
     public void forceDeleteUser(Long id) {
+        try {
+            userRepository.forceDeleteUserManagerRole(id);
+        } catch (Exception e) {
+            // Ignore if table doesn't exist
+        }
+        try {
+            userRepository.forceDeleteRefreshToken(id);
+        } catch (Exception e) {
+            // Ignore if table doesn't exist
+        }
         userRepository.forceDeleteById(id);
     }
 }
