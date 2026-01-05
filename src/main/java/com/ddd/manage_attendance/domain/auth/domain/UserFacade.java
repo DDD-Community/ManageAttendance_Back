@@ -61,6 +61,10 @@ public class UserFacade {
                         request.invitationCode(),
                         userRole);
 
+        if (request.oauthRefreshToken() != null && !request.oauthRefreshToken().isBlank()) {
+            user.updateRefreshToken(request.oauthRefreshToken());
+        }
+
         return getUserInfo(user.getId());
     }
 

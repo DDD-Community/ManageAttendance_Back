@@ -54,11 +54,21 @@ public class Invitation extends BaseEntity {
     @Column(name = "description", columnDefinition = "varchar(255)")
     private String description;
 
-    @Builder
+    @Builder(access = AccessLevel.PRIVATE)
     public Invitation(String code, InvitationType type, Long generationId, String description) {
         this.code = code;
         this.type = type;
         this.generationId = generationId;
         this.description = description;
+    }
+
+    public static Invitation createInvitation(
+            String code, InvitationType type, Long generationId, String description) {
+        return Invitation.builder()
+                .code(code)
+                .type(type)
+                .generationId(generationId)
+                .description(description)
+                .build();
     }
 }

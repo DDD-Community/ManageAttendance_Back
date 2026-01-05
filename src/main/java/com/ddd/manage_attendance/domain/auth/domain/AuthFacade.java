@@ -49,7 +49,16 @@ public class AuthFacade {
             return LoginResponse.from(user, accessToken, refreshToken, false);
         }
 
-        return new LoginResponse(null, null, null, null, "회원가입 필요", true, null, null);
+        return new LoginResponse(
+                null,
+                null,
+                null,
+                null,
+                "회원가입 필요",
+                true,
+                null,
+                null,
+                oauthUserInfo.getRefreshToken());
     }
 
     @Transactional
@@ -91,11 +100,10 @@ public class AuthFacade {
         refreshTokenRepository.deleteByUserId(userId);
 
         RefreshToken newRefreshToken =
-                RefreshToken.builder()
-                        .userId(userId)
-                        .token(refreshToken)
-                        .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds))
-                        .build();
+                RefreshToken.createToken(
+                        userId,
+                        refreshToken,
+                        LocalDateTime.now().plusSeconds(refreshTokenValidityInSeconds));
 
         refreshTokenRepository.save(newRefreshToken);
     }

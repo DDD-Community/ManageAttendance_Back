@@ -41,9 +41,14 @@ public class AppleOAuthService implements OAuthService {
     private final AppleTokenValidator appleTokenValidator;
 
     @Override
-    public OAuthUserInfo authenticate(String code) {
+    public OAuthUserInfo authenticate(String codeOrToken) {
+        // 입력값이 JWT(ID Token) 형식인지 확인 (간단히 점 2개 포함 여부로 판단)
+        if (codeOrToken != null && codeOrToken.split("\\.").length == 3) {
+            return (AppleUserInfo) appleTokenValidator.validate(codeOrToken);
+        }
+
         String clientSecret = createClientSecret();
-        AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
+        AppleTokenResponse tokenResponse = getAppleToken(codeOrToken, clientSecret);
         if (tokenResponse == null || tokenResponse.idToken() == null) {
             throw new RuntimeException("Apple ID Token 발급 실패");
         }
@@ -56,26 +61,26 @@ public class AppleOAuthService implements OAuthService {
     @Override
     public void revoke(OAuthRevocationRequest request) {
         // 우선순위: DB에 저장된 Refresh Token > 클라이언트가 준 Token
-        // 현재는 DB 토큰이 없으므로 클라이언트 토큰을 사용하지만, 구조적으로 확장 가능함.
-        String code =
+        String tokenToRevoke =
                 (request.refreshTokenFromDb() != null)
                         ? request.refreshTokenFromDb()
                         : request.tokenFromClient();
+
+        if (tokenToRevoke == null || tokenToRevoke.isBlank()) {
+            log.warn("Apple Revoke failed: No token provided.");
+            return;
+        }
+
         try {
             String clientSecret = createClientSecret();
-            AppleTokenResponse tokenResponse = getAppleToken(code, clientSecret);
-
-            if (tokenResponse == null || tokenResponse.accessToken() == null) {
-                throw new RuntimeException("Apple Access Token 발급 실패. 응답이 비어있습니다.");
-            }
-
             RestTemplate restTemplate = new RestTemplate();
             String url = "https://appleid.apple.com/auth/revoke";
 
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("client_id", clientId);
             map.add("client_secret", clientSecret);
-            map.add("token", tokenResponse.accessToken());
+            map.add("token", tokenToRevoke);
+            map.add("token_type_hint", "refresh_token");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

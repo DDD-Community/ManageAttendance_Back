@@ -48,11 +48,15 @@ public class RefreshToken extends BaseEntity {
     @Column(name = "expires_at", nullable = false, columnDefinition = "datetime")
     private LocalDateTime expiresAt;
 
-    @Builder
+    @Builder(access = AccessLevel.PRIVATE)
     public RefreshToken(Long userId, String token, LocalDateTime expiresAt) {
         this.userId = userId;
         this.token = token;
         this.expiresAt = expiresAt;
+    }
+
+    public static RefreshToken createToken(Long userId, String token, LocalDateTime expiresAt) {
+        return RefreshToken.builder().userId(userId).token(token).expiresAt(expiresAt).build();
     }
 
     public boolean isExpired() {

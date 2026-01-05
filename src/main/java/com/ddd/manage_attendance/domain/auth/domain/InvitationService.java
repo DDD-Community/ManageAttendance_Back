@@ -25,12 +25,7 @@ public class InvitationService {
             String code, InvitationType type, Long generationId, String description) {
         Generation generation = generationService.findById(generationId);
         Invitation invitation =
-                Invitation.builder()
-                        .code(code)
-                        .type(type)
-                        .generationId(generation.getId())
-                        .description(description)
-                        .build();
+                Invitation.createInvitation(code, type, generation.getId(), description);
         return invitationRepository.save(invitation).getId();
     }
 }

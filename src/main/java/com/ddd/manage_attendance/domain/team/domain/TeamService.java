@@ -16,6 +16,7 @@ public class TeamService {
         return teamRepository.findAllByGenerationId(generationId);
     }
 
+    @Transactional(readOnly = true)
     public Team findById(Long teamId) {
         return teamRepository.findById(teamId).orElseThrow(DataNotFoundException::new);
     }
@@ -30,7 +31,7 @@ public class TeamService {
 
     @Transactional
     public Long createTeam(String name, Long generationId) {
-        Team team = Team.builder().name(name).generationId(generationId).build();
+        Team team = Team.createTeam(name, generationId);
         return teamRepository.save(team).getId();
     }
 }

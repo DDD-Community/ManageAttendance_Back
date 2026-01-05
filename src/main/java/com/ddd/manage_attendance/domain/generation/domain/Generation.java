@@ -32,8 +32,12 @@ public class Generation extends BaseEntity {
     @Column(name = "name", nullable = false, columnDefinition = "varchar(5)")
     private String name;
 
-    @Builder
+    @Builder(access = AccessLevel.PRIVATE)
     public Generation(String name) {
         this.name = name;
+    }
+
+    public static Generation createGeneration(String name) {
+        return Generation.builder().name(name).build();
     }
 }

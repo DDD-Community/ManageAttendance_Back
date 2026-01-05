@@ -18,9 +18,7 @@ public class ManagerRoleListConverter implements AttributeConverter<List<Manager
         if (attribute == null || attribute.isEmpty()) {
             return null;
         }
-        return attribute.stream()
-                .map(ManagerRole::name)
-                .collect(Collectors.joining(SPLIT_CHAR));
+        return attribute.stream().map(ManagerRole::name).collect(Collectors.joining(SPLIT_CHAR));
     }
 
     @Override

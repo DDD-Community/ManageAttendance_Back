@@ -117,7 +117,6 @@ public class OAuthAuthenticationFilter extends OncePerRequestFilter {
 
     private void storeAuthentication(Authentication authentication) {
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.debug("OAuth 인증 성공: userId={}", authentication.getName());
     }
 
     private boolean isPublicEndpoint(String requestURI) {
