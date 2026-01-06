@@ -41,15 +41,6 @@ public class UserController {
         return userFacade.getUserQr(id);
     }
 
-    @GetMapping("/me")
-    @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 정보를 조회합니다.")
-    public UserInfoResponse getMyInfo(@AuthenticationPrincipal Long userId) {
-        if (userId == null) {
-            throw new AccessDeniedException("로그인이 필요합니다.");
-        }
-        return userFacade.getUserInfo(userId);
-    }
-
     @PutMapping("/me")
     @Operation(summary = "내 정보 수정 (재등록)", description = "온보딩 정보를 통해 내 정보를 수정(재등록) 합니다.")
     public UserInfoResponse updateUserInfo(
@@ -68,16 +59,5 @@ public class UserController {
         }
         String oauthToken = request != null ? request.token() : null;
         userFacade.withdrawUser(userId, oauthToken);
-    }
-    @GetMapping("/debug/all")
-    @Operation(summary = "전체 유저 RAW 조회 (디버깅용)", description = "DB에 있는 모든 유저 데이터를 날것 그대로 조회합니다.")
-    public java.util.List<java.util.Map<String, Object>> getAllUsersRaw() {
-        return userFacade.getAllUsersRaw();
-    }
-
-    @DeleteMapping("/debug/{id}")
-    @Operation(summary = "유저 강제 삭제 (디버깅용)", description = "ID로 유저를 강제 삭제합니다. (Native Query 사용)")
-    public void forceDeleteUser(@PathVariable Long id) {
-        userFacade.forceDeleteUser(id);
     }
 }

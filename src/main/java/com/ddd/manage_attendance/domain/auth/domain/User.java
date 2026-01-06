@@ -52,9 +52,9 @@ public class User extends BaseEntity {
     @Column(unique = true, name = "oauth_id", nullable = true, columnDefinition = "varchar(255)")
     private String oauthId;
 
-    @Comment("Refresh Token")
+    @Comment("OAuth 제공자의 Refresh Token (Apple 전용, 탈퇴 시 연결 해제에 사용)")
     @Column(name = "refresh_token", nullable = true, columnDefinition = "varchar(255)")
-    private String refreshToken;
+    private String oauthRefreshToken;
 
     @Comment("초대 코드")
     @Column(name = "invitation_code", nullable = false, columnDefinition = "varchar(50)")
@@ -156,8 +156,8 @@ public class User extends BaseEntity {
         }
     }
 
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
+    public void updateOAuthRefreshToken(String oauthRefreshToken) {
+        this.oauthRefreshToken = oauthRefreshToken;
     }
 
     public List<ManagerRole> getManagerRolesOrNull() {

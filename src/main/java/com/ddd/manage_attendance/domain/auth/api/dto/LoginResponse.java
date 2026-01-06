@@ -14,7 +14,11 @@ public record LoginResponse(
         String refreshToken,
         String oauthRefreshToken) {
     public static LoginResponse from(
-            User user, String accessToken, String refreshToken, boolean isNewUser) {
+            User user,
+            String accessToken,
+            String refreshToken,
+            String oauthRefreshToken,
+            boolean isNewUser) {
         return new LoginResponse(
                 user.getId(),
                 user.getName(),
@@ -24,6 +28,6 @@ public record LoginResponse(
                 isNewUser,
                 accessToken,
                 refreshToken,
-                null);
+                oauthRefreshToken);
     }
 }
