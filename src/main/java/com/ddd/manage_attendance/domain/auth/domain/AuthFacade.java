@@ -37,8 +37,10 @@ public class AuthFacade {
         if (existingUser.isPresent()) {
             User user = existingUser.get();
 
+            String oauthRefreshToken = null;
             if (oauthUserInfo.getRefreshToken() != null) {
-                user.updateRefreshToken(oauthUserInfo.getRefreshToken());
+                user.updateOAuthRefreshToken(oauthUserInfo.getRefreshToken());
+                oauthRefreshToken = oauthUserInfo.getRefreshToken();
             }
 
             String accessToken = tokenProvider.createAccessToken(user.getId());
@@ -46,7 +48,7 @@ public class AuthFacade {
 
             saveRefreshToken(user.getId(), refreshToken);
 
-            return LoginResponse.from(user, accessToken, refreshToken, false);
+            return LoginResponse.from(user, accessToken, refreshToken, oauthRefreshToken, false);
         }
 
         return new LoginResponse(

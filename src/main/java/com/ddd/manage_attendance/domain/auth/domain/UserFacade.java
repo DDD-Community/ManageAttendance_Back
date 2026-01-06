@@ -62,7 +62,7 @@ public class UserFacade {
                         userRole);
 
         if (request.oauthRefreshToken() != null && !request.oauthRefreshToken().isBlank()) {
-            user.updateRefreshToken(request.oauthRefreshToken());
+            user.updateOAuthRefreshToken(request.oauthRefreshToken());
         }
 
         return getUserInfo(user.getId());
@@ -146,7 +146,7 @@ public class UserFacade {
         if (oauthToken != null && !oauthToken.isBlank() && user.getOauthProvider() != null) {
             try {
                 OAuthRevocationRequest revocationRequest =
-                        new OAuthRevocationRequest(oauthToken, user.getRefreshToken());
+                        new OAuthRevocationRequest(oauthToken, user.getOauthRefreshToken());
                 oauthServiceResolver.resolve(user.getOauthProvider()).revoke(revocationRequest);
             } catch (Exception e) {
                 log.warn("OAuth revocation failed for user {}. Error: {}", userId, e.getMessage());

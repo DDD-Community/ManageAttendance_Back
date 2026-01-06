@@ -41,15 +41,6 @@ public class UserController {
         return userFacade.getUserQr(id);
     }
 
-    @GetMapping("/me")
-    @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 정보를 조회합니다.")
-    public UserInfoResponse getMyInfo(@AuthenticationPrincipal Long userId) {
-        if (userId == null) {
-            throw new AccessDeniedException("로그인이 필요합니다.");
-        }
-        return userFacade.getUserInfo(userId);
-    }
-
     @PutMapping("/me")
     @Operation(summary = "내 정보 수정 (재등록)", description = "온보딩 정보를 통해 내 정보를 수정(재등록) 합니다.")
     public UserInfoResponse updateUserInfo(
