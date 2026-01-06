@@ -28,10 +28,4 @@ public class TeamService {
         }
         return teamRepository.findById(teamId).map(Team::getName).orElse(null);
     }
-
-    @Transactional
-    public Long createTeam(String name, Long generationId) {
-        Team team = Team.createTeam(name, generationId);
-        return teamRepository.save(team).getId();
-    }
 }

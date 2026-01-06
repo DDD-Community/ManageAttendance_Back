@@ -44,4 +44,6 @@ public class AdminMyPageController {
             @PathVariable @Positive final Long teamId) {
         return attendanceFacade.getTeamAttendancesByScheduleId(scheduleId, teamId);
     }
+
+    // TODO :: 어드민이랑 팀이랑 분리해서 조회하기
 }
