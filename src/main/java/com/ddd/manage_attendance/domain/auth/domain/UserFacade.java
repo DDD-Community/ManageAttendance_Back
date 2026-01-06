@@ -156,27 +156,4 @@ public class UserFacade {
         attendanceRepository.deleteByUserId(userId);
         userService.deleteUser(userId);
     }
-    @Transactional(readOnly = true)
-    public List<java.util.Map<String, Object>> getAllUsersRaw() {
-        return userService.getAllUsersRaw();
-    }
-
-    @Transactional
-    public void forceDeleteUser(Long id) {
-        attendanceRepository.deleteByUserId(id);
-
-        try {
-            userService.forceDeleteUserManagerRole(id);
-        } catch (Exception e) {
-            log.warn("Force delete user_manager_role failed (ignored): {}", e.getMessage());
-        }
-
-        try {
-            userService.forceDeleteRefreshToken(id);
-        } catch (Exception e) {
-             log.warn("Force delete refresh token failed (ignored): {}", e.getMessage());
-        }
-
-        userService.forceDeleteUser(id);
-    }
 }

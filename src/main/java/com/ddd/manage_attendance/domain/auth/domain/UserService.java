@@ -78,23 +78,5 @@ public class UserService {
     public void deleteUser(final Long userId) {
         userRepository.deleteById(userId);
     }
-    @Transactional(readOnly = true)
-    public List<java.util.Map<String, Object>> getAllUsersRaw() {
-        return userRepository.findAllRaw();
-    }
 
-    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
-    public void forceDeleteUserManagerRole(Long id) {
-        userRepository.forceDeleteUserManagerRole(id);
-    }
-
-    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
-    public void forceDeleteRefreshToken(Long id) {
-        userRepository.forceDeleteRefreshToken(id);
-    }
-
-    @Transactional
-    public void forceDeleteUser(Long id) {
-        userRepository.forceDeleteById(id);
-    }
 }
