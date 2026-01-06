@@ -2,6 +2,8 @@ package com.ddd.manage_attendance.core.exception;
 
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,8 +85,8 @@ public class GlobalExceptionHandler {
     }
 
     private String getStackTrace(Exception e) {
-        java.io.StringWriter sw = new java.io.StringWriter();
-        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         return sw.toString();
     }
