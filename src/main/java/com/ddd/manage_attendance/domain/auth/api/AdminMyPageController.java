@@ -44,15 +44,17 @@ public class AdminMyPageController {
 
     @GetMapping("/generations/teams")
     @Operation(summary = "현재 기수 팀 이름 조회", description = "현재 기수 팀 이름을 조회 합니다.")
-    public List<TeamResponse> getCurrentGenerationTeams(@AuthenticationPrincipal Long userId) {
+    public List<TeamResponse> getCurrentGenerationTeams(
+            @AuthenticationPrincipal final Long userId) {
         return teamFacade.getCurrentGenerationTeams(userId);
     }
 
     @GetMapping("/schedules/{scheduleId}/teams/{teamId}/attendances")
     @Operation(summary = "세션 별 팀 멤버 출석 현황 조회", description = "세션 별 팀 멤버 출석 현황을 조회 합니다.")
     public List<TeamAttendancesResponse> getTeamAttendancesByScheduleId(
+            @AuthenticationPrincipal final Long userId,
             @PathVariable @Positive final Long scheduleId,
             @PathVariable @Positive final Long teamId) {
-        return attendanceFacade.getTeamAttendancesByScheduleId(scheduleId, teamId);
+        return attendanceFacade.getTeamAttendancesByScheduleId(userId, scheduleId, teamId);
     }
 }

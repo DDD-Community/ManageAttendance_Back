@@ -23,8 +23,7 @@ public class AdminUserController {
 
     @GetMapping
     @Operation(summary = "전체 회원 조회", description = "전체 회원을 조회합니다. (이름 검색 가능)")
-    public List<UserInfoResponse> searchUsers(
-            @RequestParam(required = false) String name) {
+    public List<UserInfoResponse> searchUsers(@RequestParam(required = false) String name) {
         return userFacade.searchUsers(name);
     }
 
