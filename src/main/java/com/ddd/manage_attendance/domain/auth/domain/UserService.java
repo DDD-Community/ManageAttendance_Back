@@ -78,4 +78,12 @@ public class UserService {
     public void deleteUser(final Long userId) {
         userRepository.deleteById(userId);
     }
+
+    @Transactional(readOnly = true)
+    public List<User> searchUsers(String name) {
+        if (name == null || name.isBlank()) {
+            return userRepository.findAllByOrderByGenerationIdDesc();
+        }
+        return userRepository.findByNameContaining(name);
+    }
 }
