@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 @Tag(name = "[운영진] 회원 관리 API", description = "운영진 회원 관리 API 입니다.")
-@PreAuthorize("hasAuthority('MANAGER')")
 public class AdminUserController {
 
     private final UserFacade userFacade;
