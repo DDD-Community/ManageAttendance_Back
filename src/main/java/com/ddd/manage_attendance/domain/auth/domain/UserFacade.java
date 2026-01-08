@@ -92,6 +92,7 @@ public class UserFacade {
         validateRoleRequirements(invitation, request);
 
         final Long generationId = invitation.getGenerationId();
+        UserRole role = UserRole.valueOf(invitation.getType().name());
 
         userService.updateUser(
                 userId,
@@ -99,7 +100,8 @@ public class UserFacade {
                 generationId,
                 request.teamId(),
                 request.jobRole(),
-                request.managerRoles());
+                request.managerRoles(),
+                role);
 
         return getUserInfo(userId);
     }
