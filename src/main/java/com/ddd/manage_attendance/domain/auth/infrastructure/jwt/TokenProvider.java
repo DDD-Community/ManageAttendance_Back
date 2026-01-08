@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.auth.infrastructure.jwt;
 
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -26,7 +27,7 @@ public class TokenProvider {
         this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
     }
 
-    public String createAccessToken(Long userId, com.ddd.manage_attendance.domain.auth.domain.UserRole role) {
+    public String createAccessToken(Long userId, UserRole role) {
         return createToken(String.valueOf(userId), role, accessTokenValidityInMilliseconds);
     }
 
@@ -34,7 +35,7 @@ public class TokenProvider {
         return createToken(String.valueOf(userId), null, refreshTokenValidityInMilliseconds);
     }
 
-    private String createToken(String subject, com.ddd.manage_attendance.domain.auth.domain.UserRole role, long validity) {
+    private String createToken(String subject, UserRole role, long validity) {
         long now = (new Date()).getTime();
         Date validityDate = new Date(now + validity);
 
