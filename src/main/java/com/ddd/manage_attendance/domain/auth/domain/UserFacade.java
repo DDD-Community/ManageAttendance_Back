@@ -157,22 +157,7 @@ public class UserFacade {
         userService.deleteUser(userId);
     }
 
-    @Transactional(readOnly = true)
-    public List<UserInfoResponse> searchUsers(String name) {
-        return userService.searchUsers(name).stream()
-                .map(
-                        user -> {
-                            String generationName =
-                                    generationService.getGenerationName(user.getGenerationId());
-                            String teamName = teamService.getTeamName(user.getTeamId());
-                            return UserInfoResponse.from(user, generationName, teamName);
-                        })
-                .toList();
-    }
 
-    @Transactional
-    public void forceDeleteUser(final Long userId) {
-        attendanceRepository.deleteByUserId(userId);
-        userService.deleteUser(userId);
-    }
+
+
 }
