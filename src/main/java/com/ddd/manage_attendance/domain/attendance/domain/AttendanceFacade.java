@@ -29,13 +29,17 @@ public class AttendanceFacade {
     private final TeamService teamService;
 
     @Transactional
-    public void checkInByQrCode(final AttendanceCheckInRequest request) {
+    public void checkInByQrCode(final Long userId, final AttendanceCheckInRequest request) {
+        // 운영진 권한 체크
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+
         final String qrCode = request.qrCode();
-        qrService.extractTokenIfValid(qrCode);
         final User user = userService.getUserByQrCode(qrCode);
         final LocalDate today = LocalDate.now();
         final Schedule schedule =
                 scheduleService.getScheduleByDateAndGenerationId(today, user.getGenerationId());
+        qrService.extractTokenIfValid(qrCode);
         attendanceService.checkInByQrCode(
                 user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
     }
@@ -62,14 +66,18 @@ public class AttendanceFacade {
     @Transactional(readOnly = true)
     public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
             final Long userId, final Long scheduleId) {
-        // TODO: 운영진인지 확인 하는 기능 추가 필요
+
         final User user = userService.getUser(userId);
+        user.validateManager();
         return attendanceService.getGenerationAttendanceSummaryByScheduleId(scheduleId);
     }
 
     @Transactional(readOnly = true)
     public List<TeamAttendancesResponse> getTeamAttendancesByScheduleId(
-            final Long scheduleId, final Long teamId) {
+            final Long userId, final Long scheduleId, final Long teamId) {
+        final User user = userService.getUser(userId);
+        user.validateManager();
+
         final Team team = teamService.findById(teamId);
         final List<User> teamUsers = userService.findUsersByTeamId(teamId);
 
@@ -88,7 +96,12 @@ public class AttendanceFacade {
 
     @Transactional
     public void modifyAttendance(
-            final Long attendanceId, final AttendanceStatusModifyRequest request) {
+            final Long userId,
+            final Long attendanceId,
+            final AttendanceStatusModifyRequest request) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+
         final Attendance attendance = attendanceService.findAttendanceById(attendanceId);
         if (!Objects.equals(attendance.getUserId(), request.userId())) {
             throw new NotUserAttendanceException();

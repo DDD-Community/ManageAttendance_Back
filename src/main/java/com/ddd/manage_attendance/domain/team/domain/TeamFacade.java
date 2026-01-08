@@ -15,9 +15,10 @@ public class TeamFacade {
     private final TeamService teamService;
 
     @Transactional(readOnly = true)
-    public List<TeamResponse> getCurrentGenerationTeams(Long userId) {
-        // TODO: 운영진 확인 필요
+    public List<TeamResponse> getCurrentGenerationTeams(final Long userId) {
+        // 운영진 권한 체크
         final User user = userService.getUser(userId);
+        user.validateManager();
         return TeamResponse.fromList(teamService.findAllByGenerationId(user.getGenerationId()));
     }
 }

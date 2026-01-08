@@ -42,7 +42,7 @@ public class Schedule extends BaseEntity {
 
     @NotNull
     @Comment("세션 시간")
-    @Column(unique = true, name = "schedule_time", nullable = false)
+    @Column(name = "schedule_time", nullable = false)
     private LocalTime scheduleTime;
 
     @NotNull

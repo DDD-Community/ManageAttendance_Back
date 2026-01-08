@@ -166,4 +166,14 @@ public class User extends BaseEntity {
         }
         return managerRoles;
     }
+
+    public boolean isManager() {
+        return this.role == UserRole.MANAGER;
+    }
+
+    public void validateManager() {
+        if (!isManager()) {
+            throw new ManagerOnlyOperationException();
+        }
+    }
 }

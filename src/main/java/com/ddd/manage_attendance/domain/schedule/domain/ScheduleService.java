@@ -1,6 +1,5 @@
 package com.ddd.manage_attendance.domain.schedule.domain;
 
-import com.ddd.manage_attendance.core.exception.DataNotFoundException;
 import com.ddd.manage_attendance.domain.schedule.api.dto.ScheduleResponse;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +27,6 @@ public class ScheduleService {
             final LocalDate date, final Long generationId) {
         return scheduleRepository
                 .findByDateAndGenerationId(date, generationId)
-                .orElseThrow(DataNotFoundException::new);
+                .orElseThrow(NoScheduleException::new);
     }
 }

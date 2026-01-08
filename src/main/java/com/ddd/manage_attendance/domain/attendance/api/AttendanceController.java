@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +30,10 @@ public class AttendanceController {
 
     @PostMapping
     @Operation(summary = "출석", description = "출석을 합니다.")
-    public void checkIn(@RequestBody final AttendanceCheckInRequest request) {
-        attendanceFacade.checkInByQrCode(request);
+    public void checkIn(
+            @AuthenticationPrincipal final Long userId,
+            @RequestBody final AttendanceCheckInRequest request) {
+        attendanceFacade.checkInByQrCode(userId, request);
     }
 
     @GetMapping("/status")
@@ -42,8 +45,9 @@ public class AttendanceController {
     @PutMapping("/{attendanceId}")
     @Operation(summary = "출석 변경", description = "출석을 변경 합니다.")
     public void modifyAttendance(
+            @AuthenticationPrincipal final Long userId,
             @PathVariable @Positive Long attendanceId,
             @RequestBody final AttendanceStatusModifyRequest request) {
-        attendanceFacade.modifyAttendance(attendanceId, request);
+        attendanceFacade.modifyAttendance(userId, attendanceId, request);
     }
 }
