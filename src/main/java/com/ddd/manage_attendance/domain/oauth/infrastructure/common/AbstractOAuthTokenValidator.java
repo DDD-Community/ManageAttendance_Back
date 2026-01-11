@@ -45,7 +45,11 @@ public abstract class AbstractOAuthTokenValidator<T extends OAuthUserInfo> {
 
     private void verifySignature(String token, PublicKey publicKey) {
         try {
-            Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
+            Jwts.parser()
+                    .clockSkewSeconds(60 * 60 * 24) // 24시간 허용 (서버 시간 오차 문제 해결)
+                    .verifyWith(publicKey)
+                    .build()
+                    .parseSignedClaims(token);
         } catch (Exception e) {
             throw new OAuthTokenValidationException(getProvider(), "토큰 서명 검증에 실패했습니다.", e);
         }
