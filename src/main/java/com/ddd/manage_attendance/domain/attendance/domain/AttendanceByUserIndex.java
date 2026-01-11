@@ -8,14 +8,14 @@ public class AttendanceByUserIndex {
 
     private final Map<Long, Long> byUserId;
 
-    private AttendanceByUserIndex(Map<Long, Long> byScheduleId) {
-        this.byUserId = byScheduleId;
+    private AttendanceByUserIndex(Map<Long, Long> byUserId) {
+        this.byUserId = byUserId;
     }
 
     public static AttendanceByUserIndex from(List<Attendance> attendances) {
         Map<Long, Long> map = new HashMap<>();
         for (Attendance attendance : attendances) {
-            map.put(attendance.getScheduleId(), attendance.getId());
+            map.put(attendance.getUserId(), attendance.getId());
         }
         return new AttendanceByUserIndex(map);
     }
