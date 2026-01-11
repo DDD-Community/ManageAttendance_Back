@@ -69,9 +69,10 @@ public class UserService {
             final Long generationId,
             final Long teamId,
             final JobRole jobRole,
-            final List<ManagerRole> managerRoles) {
+            final List<ManagerRole> managerRoles,
+            final UserRole role) {
         User user = getUser(userId);
-        user.updateProfile(name, generationId, teamId, jobRole, managerRoles);
+        user.updateProfile(name, generationId, teamId, jobRole, managerRoles, role);
     }
 
     @Transactional
@@ -79,11 +80,5 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    @Transactional(readOnly = true)
-    public List<User> searchUsers(String name) {
-        if (name == null || name.isBlank()) {
-            return userRepository.findAllByOrderByGenerationIdDesc();
-        }
-        return userRepository.findByNameContaining(name);
-    }
+
 }

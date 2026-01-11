@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.auth.infrastructure.jwt;
 
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -26,24 +27,29 @@ public class TokenProvider {
         this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
     }
 
-    public String createAccessToken(Long userId) {
-        return createToken(String.valueOf(userId), accessTokenValidityInMilliseconds);
+    public String createAccessToken(Long userId, UserRole role) {
+        return createToken(String.valueOf(userId), role, accessTokenValidityInMilliseconds);
     }
 
     public String createRefreshToken(Long userId) {
-        return createToken(String.valueOf(userId), refreshTokenValidityInMilliseconds);
+        return createToken(String.valueOf(userId), null, refreshTokenValidityInMilliseconds);
     }
 
-    private String createToken(String subject, long validity) {
+    private String createToken(String subject, UserRole role, long validity) {
         long now = (new Date()).getTime();
         Date validityDate = new Date(now + validity);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(subject)
                 .issuedAt(new Date())
                 .expiration(validityDate)
-                .signWith(key)
-                .compact();
+                .signWith(key);
+        
+        if (role != null) {
+            builder.claim("role", role.name());
+        }
+                
+        return builder.compact();
     }
 
     public boolean validateToken(String token) {
@@ -58,5 +64,10 @@ public class TokenProvider {
     public Long getUserId(String token) {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         return Long.parseLong(claims.getSubject());
+    }
+    
+    public String getRole(String token) {
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        return claims.get("role", String.class);
     }
 }

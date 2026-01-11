@@ -145,7 +145,8 @@ public class User extends BaseEntity {
             Long generationId,
             Long teamId,
             JobRole job,
-            List<ManagerRole> managerRoles) {
+            List<ManagerRole> managerRoles,
+            UserRole role) {
         this.name = name;
         this.generationId = generationId;
         this.teamId = teamId;
@@ -154,6 +155,7 @@ public class User extends BaseEntity {
         if (managerRoles != null) {
             this.managerRoles.addAll(managerRoles);
         }
+        this.role = role;
     }
 
     public void updateOAuthRefreshToken(String oauthRefreshToken) {
