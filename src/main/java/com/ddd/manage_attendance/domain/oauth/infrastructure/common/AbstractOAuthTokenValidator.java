@@ -58,7 +58,7 @@ public abstract class AbstractOAuthTokenValidator<T extends OAuthUserInfo> {
     private void validateClaims(T userInfo) {
         validateIssuer(userInfo);
         validateAudience(userInfo);
-        validateExpiration(userInfo);
+        // validateExpiration(userInfo); // Jwts.parser()에서 이미 검증 (clockSkew 적용됨)
     }
 
     private void validateIssuer(T userInfo) {
