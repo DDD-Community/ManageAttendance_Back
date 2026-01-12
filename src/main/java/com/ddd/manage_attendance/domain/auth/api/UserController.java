@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.auth.api.dto.UserUpdateRequest;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserWithdrawRequest;
 import com.ddd.manage_attendance.domain.auth.domain.UserFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,25 +25,34 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name = "유저 API", description = "유저 API 입니다.")
+@Tag(name = "User", description = "유저 관리 API")
 public class UserController {
 
     private final UserFacade userFacade;
 
     @PostMapping
-    @Operation(summary = "유저 저장", description = "유저를 저장 합니다.")
+    @Operation(
+            summary = "[공개] 회원가입",
+            description =
+                    "신규 유저를 등록합니다.\n\n"
+                            + "- 인증 불필요 (회원가입 API)\n"
+                            + "- 초대 코드 검증 필수\n"
+                            + "- OAuth 인증 후 호출")
     public UserInfoResponse registerUser(@Valid @RequestBody final UserRegisterRequest request) {
         return userFacade.registerUser(request);
     }
 
     @GetMapping("/{id}/qr")
-    @Operation(summary = "유저 QR 조회", description = "유저 QR를 조회 합니다.")
+    @Operation(summary = "[공개] 유저 QR 조회", description = "유저의 QR 코드를 조회합니다.\n\n" + "- 인증 불필요")
     public UserQrResponse getUserQr(@PathVariable final Long id) {
         return userFacade.getUserQr(id);
     }
 
     @PutMapping("/me")
-    @Operation(summary = "내 정보 수정 (재등록)", description = "온보딩 정보를 통해 내 정보를 수정(재등록) 합니다.")
+    @Operation(
+            summary = "[인증] 내 정보 수정 (재등록)",
+            description = "온보딩 정보를 통해 내 정보를 수정(재등록) 합니다.\n\n" + "- JWT 토큰 필요")
+    @SecurityRequirement(name = "JWT")
     public UserInfoResponse updateUserInfo(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody final UserUpdateRequest request) {
@@ -50,7 +60,10 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴를 진행합니다. (OAuth 토큰이 있으면 연결 해제 포함)")
+    @Operation(
+            summary = "[인증] 회원 탈퇴",
+            description = "회원 탈퇴를 진행합니다. (OAuth 토큰이 있으면 연결 해제 포함)\n\n" + "- JWT 토큰 필요")
+    @SecurityRequirement(name = "JWT")
     public void withdrawUser(
             @AuthenticationPrincipal Long userId,
             @RequestBody(required = false) UserWithdrawRequest request) {

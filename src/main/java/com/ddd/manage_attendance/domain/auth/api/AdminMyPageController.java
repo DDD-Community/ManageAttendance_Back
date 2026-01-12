@@ -8,6 +8,7 @@ import com.ddd.manage_attendance.domain.auth.domain.MyPageFacade;
 import com.ddd.manage_attendance.domain.team.api.dto.TeamResponse;
 import com.ddd.manage_attendance.domain.team.domain.TeamFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -22,35 +23,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/me")
 @RequiredArgsConstructor
-@Tag(name = "[운영진] 마이페이지 API", description = "운영진 마이페이지 API 입니다.")
+@Tag(name = "Admin MyPage", description = "운영진 전용 마이페이지 API - 모든 API 운영진 권한 필요")
 @PreAuthorize("hasAuthority('MANAGER')")
+@SecurityRequirement(name = "JWT")
 public class AdminMyPageController {
     private final AttendanceFacade attendanceFacade;
     private final TeamFacade teamFacade;
     private final MyPageFacade myPageFacade;
 
     @GetMapping
-    @Operation(summary = "내 정보 조회", description = "로그인된 사용자의 정보를 조회합니다.")
+    @Operation(summary = "[운영진] 내 정보 조회", description = "운영진의 정보를 조회합니다.")
     public UserInfoResponse getMyInfo(@AuthenticationPrincipal Long userId) {
         return myPageFacade.getMyInfo(userId);
     }
 
     @GetMapping("/schedules/{scheduleId}/attendances")
-    @Operation(summary = "기수 출석 현황 요약 조회", description = "기수 출석 현황 요약을 조회 합니다.")
+    @Operation(summary = "[운영진] 기수 출석 현황 요약 조회", description = "기수 출석 현황 요약을 조회합니다.")
     public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
             @AuthenticationPrincipal Long userId, @PathVariable @Positive final Long scheduleId) {
         return attendanceFacade.getGenerationAttendanceSummaryByScheduleId(userId, scheduleId);
     }
 
     @GetMapping("/generations/teams")
-    @Operation(summary = "현재 기수 팀 이름 조회", description = "현재 기수 팀 이름을 조회 합니다.")
+    @Operation(summary = "[운영진] 현재 기수 팀 이름 조회", description = "현재 기수의 팀 이름을 조회합니다.")
     public List<TeamResponse> getCurrentGenerationTeams(
             @AuthenticationPrincipal final Long userId) {
         return teamFacade.getCurrentGenerationTeams(userId);
     }
 
     @GetMapping("/schedules/{scheduleId}/teams/{teamId}/attendances")
-    @Operation(summary = "세션 별 팀 멤버 출석 현황 조회", description = "세션 별 팀 멤버 출석 현황을 조회 합니다.")
+    @Operation(summary = "[운영진] 세션별 팀 멤버 출석 현황 조회", description = "특정 세션의 팀 멤버 출석 현황을 조회합니다.")
     public List<TeamAttendancesResponse> getTeamAttendancesByScheduleId(
             @AuthenticationPrincipal final Long userId,
             @PathVariable @Positive final Long scheduleId,

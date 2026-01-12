@@ -46,10 +46,12 @@ public class UserFacade {
         final OAuthUserInfo oauthUserInfo =
                 oauthServiceResolver.resolve(request.provider()).authenticate(request.token());
 
-        userService.findByOAuthProviderAndOAuthId(request.provider(), oauthUserInfo.getSub())
-                .ifPresent(user -> {
-                    throw new AlreadyRegisteredException();
-                });
+        userService
+                .findByOAuthProviderAndOAuthId(request.provider(), oauthUserInfo.getSub())
+                .ifPresent(
+                        user -> {
+                            throw new AlreadyRegisteredException();
+                        });
 
         final String qrCode = qrService.generateQrCodeKey();
 
@@ -164,8 +166,4 @@ public class UserFacade {
         attendanceRepository.deleteByUserId(userId);
         userService.deleteUser(userId);
     }
-
-
-
-
 }
