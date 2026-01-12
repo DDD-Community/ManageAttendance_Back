@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException e, HttpServletRequest request) {
-        log.warn("Access Denied. Message: {}, Path: {}", e.getMessage(), request.getRequestURI());
+         log.warn("Access Denied. Message: {}, Path: {}", e.getMessage(), request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.of("UNAUTHORIZED", "로그인이 필요한 서비스입니다.", getStackTrace(e)));

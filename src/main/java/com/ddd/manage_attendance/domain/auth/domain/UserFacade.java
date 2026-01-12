@@ -5,6 +5,7 @@ import com.ddd.manage_attendance.domain.auth.api.dto.UserInfoResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserQrResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserRegisterRequest;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserUpdateRequest;
+import com.ddd.manage_attendance.domain.auth.exception.AlreadyRegisteredException;
 import com.ddd.manage_attendance.domain.auth.exception.GenerationMismatchException;
 import com.ddd.manage_attendance.domain.auth.exception.InvalidUserRegistrationException;
 import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
@@ -44,6 +45,11 @@ public class UserFacade {
 
         final OAuthUserInfo oauthUserInfo =
                 oauthServiceResolver.resolve(request.provider()).authenticate(request.token());
+
+        userService.findByOAuthProviderAndOAuthId(request.provider(), oauthUserInfo.getSub())
+                .ifPresent(user -> {
+                    throw new AlreadyRegisteredException();
+                });
 
         final String qrCode = qrService.generateQrCodeKey();
 
