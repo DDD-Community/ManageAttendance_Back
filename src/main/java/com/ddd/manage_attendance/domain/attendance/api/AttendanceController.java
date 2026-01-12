@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.api;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceFacade;
@@ -35,10 +36,10 @@ public class AttendanceController {
             description =
                     "QR 코드를 스캔하여 사용자의 출석을 체크합니다.\n\n" + "- 운영진 권한 필수\n" + "- QR 코드 검증 후 출석 처리")
     @SecurityRequirement(name = "JWT")
-    public void checkIn(
+    public AttendanceCheckInResponse checkIn(
             @AuthenticationPrincipal final Long userId,
             @RequestBody final AttendanceCheckInRequest request) {
-        attendanceFacade.checkInByQrCode(userId, request);
+        return attendanceFacade.checkInByQrCode(userId, request);
     }
 
     @GetMapping("/status")

@@ -73,4 +73,10 @@ public class UserController {
         String oauthToken = request != null ? request.token() : null;
         userFacade.withdrawUser(userId, oauthToken);
     }
+
+    @PostMapping("/attendances/missing/generate")
+    @Operation(summary = "누락 된 유저 출석 기록 저장", description = "누락 된 유저 출석 기록을 저장 합니다.")
+    public void generateMissingAttendances(@AuthenticationPrincipal Long userId) {
+        userFacade.generateMissingAttendances(userId);
+    }
 }

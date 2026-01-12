@@ -29,4 +29,11 @@ public class ScheduleService {
                 .findByDateAndGenerationId(date, generationId)
                 .orElseThrow(NoScheduleException::new);
     }
+
+    @Transactional(readOnly = true)
+    public List<Schedule> getScheduleByGenerationIdBeforeDate(
+            final LocalDate date, final Long generationId) {
+        return scheduleRepository.findAllByGenerationIdAndDateBeforeOrderByDateAsc(
+                generationId, date);
+    }
 }
