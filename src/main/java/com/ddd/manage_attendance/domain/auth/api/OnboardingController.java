@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/onboarding")
 @RequiredArgsConstructor
-@Tag(name = "Onboarding API", description = "온보딩(회원가입 절차) 관련 API")
+@Tag(name = "Onboarding", description = "온보딩(회원가입 절차) 관련 API - 모든 API 인증 불필요")
 public class OnboardingController {
 
     private final InvitationService invitationService;

@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/schedules")
-@SecurityRequirement(name = "JWT")
 @RequiredArgsConstructor
-@Tag(name = "스케줄 API", description = "스케줄 API 입니다.")
+@Tag(name = "Schedule", description = "세션 스케줄 조회 API - 모든 API JWT 필요")
+@SecurityRequirement(name = "JWT")
 public class ScheduleController {
     private final ScheduleFacade scheduleFacade;
 
     @GetMapping
-    @Operation(summary = "전체 스케줄 조회", description = "전체 스케줄을 조회 합니다.")
+    @Operation(summary = "[인증] 전체 스케줄 조회", description = "사용자가 속한 기수의 전체 스케줄을 조회합니다.")
     public List<ScheduleResponse> getAllSchedule(@AuthenticationPrincipal Long userId) {
         return scheduleFacade.getAllScheduleResponses(userId);
     }
