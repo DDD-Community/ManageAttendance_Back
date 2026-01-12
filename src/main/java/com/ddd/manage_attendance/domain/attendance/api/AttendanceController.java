@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.api;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceFacade;
@@ -30,10 +31,10 @@ public class AttendanceController {
 
     @PostMapping
     @Operation(summary = "출석", description = "출석을 합니다.")
-    public void checkIn(
+    public AttendanceCheckInResponse checkIn(
             @AuthenticationPrincipal final Long userId,
             @RequestBody final AttendanceCheckInRequest request) {
-        attendanceFacade.checkInByQrCode(userId, request);
+        return attendanceFacade.checkInByQrCode(userId, request);
     }
 
     @GetMapping("/status")

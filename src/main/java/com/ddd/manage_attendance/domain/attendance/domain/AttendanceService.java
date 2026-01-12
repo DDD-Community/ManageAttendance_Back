@@ -20,7 +20,7 @@ public class AttendanceService {
     private static final long lateLimitTime = 30;
 
     @Transactional
-    public void checkInByQrCode(
+    public AttendanceStatus checkInByQrCode(
             final Long userId,
             final Long scheduleId,
             final LocalTime scheduleTime,
@@ -38,7 +38,9 @@ public class AttendanceService {
                             throw new DuplicatedAttendanceException();
                         });
 
-        attendanceRepository.save(Attendance.checkIn(userId, scheduleId, status));
+        saveAttendance(userId, scheduleId, status);
+
+        return status;
     }
 
     @Transactional(readOnly = true)
@@ -72,6 +74,12 @@ public class AttendanceService {
     @Transactional(readOnly = true)
     public Attendance findAttendanceById(final Long attendanceId) {
         return attendanceRepository.findById(attendanceId).orElseThrow(DataNotFoundException::new);
+    }
+
+    @Transactional
+    public void saveAttendance(
+            final Long userId, final Long scheduleId, final AttendanceStatus status) {
+        attendanceRepository.save(Attendance.checkIn(userId, scheduleId, status));
     }
 
     public List<AttendanceStatusResponse> getStatus() {

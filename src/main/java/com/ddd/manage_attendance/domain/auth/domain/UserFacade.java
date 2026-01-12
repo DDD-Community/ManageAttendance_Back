@@ -1,6 +1,9 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
+import com.ddd.manage_attendance.domain.attendance.domain.Attendance;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceRepository;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceStatus;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserInfoResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserQrResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserRegisterRequest;
@@ -13,10 +16,15 @@ import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
+import com.ddd.manage_attendance.domain.schedule.domain.Schedule;
+import com.ddd.manage_attendance.domain.schedule.domain.ScheduleService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.team.exception.TeamNotFoundException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +40,8 @@ public class UserFacade {
     private final InvitationService invitationService;
     private final GenerationService generationService;
     private final TeamService teamService;
+    private final ScheduleService scheduleService;
+    private final AttendanceService attendanceService;
     private final AttendanceRepository attendanceRepository;
     private static final int DEFAULT_QR_SIZE = 300;
 
@@ -46,10 +56,12 @@ public class UserFacade {
         final OAuthUserInfo oauthUserInfo =
                 oauthServiceResolver.resolve(request.provider()).authenticate(request.token());
 
-        userService.findByOAuthProviderAndOAuthId(request.provider(), oauthUserInfo.getSub())
-                .ifPresent(user -> {
-                    throw new AlreadyRegisteredException();
-                });
+        userService
+                .findByOAuthProviderAndOAuthId(request.provider(), oauthUserInfo.getSub())
+                .ifPresent(
+                        user -> {
+                            throw new AlreadyRegisteredException();
+                        });
 
         final String qrCode = qrService.generateQrCodeKey();
 
@@ -165,7 +177,23 @@ public class UserFacade {
         userService.deleteUser(userId);
     }
 
+    @Transactional
+    public void generateMissingAttendances(final Long userId) {
+        final LocalDate now = LocalDate.now();
+        final User user = userService.getUser(userId);
+        final List<Schedule> schedules =
+                scheduleService.getScheduleByGenerationIdBeforeDate(now, user.getGenerationId());
+        if (schedules.isEmpty()) return;
+        final List<Long> scheduleIds = schedules.stream().map(Schedule::getId).toList();
 
-
-
+        final Set<Long> existingScheduleIds =
+                attendanceService.findAllUserAttendancesByScheduleIds(userId, scheduleIds).stream()
+                        .map(Attendance::getScheduleId)
+                        .collect(Collectors.toSet());
+        for (final Long scheduleId : scheduleIds) {
+            if (!existingScheduleIds.contains(scheduleId)) {
+                attendanceService.saveAttendance(userId, scheduleId, AttendanceStatus.ABSENT);
+            }
+        }
+    }
 }

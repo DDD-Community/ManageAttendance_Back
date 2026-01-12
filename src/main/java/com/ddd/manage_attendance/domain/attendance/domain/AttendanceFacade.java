@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.TeamAttendancesResponse;
@@ -29,7 +30,8 @@ public class AttendanceFacade {
     private final TeamService teamService;
 
     @Transactional
-    public void checkInByQrCode(final Long userId, final AttendanceCheckInRequest request) {
+    public AttendanceCheckInResponse checkInByQrCode(
+            final Long userId, final AttendanceCheckInRequest request) {
         // 운영진 권한 체크
         final User manager = userService.getUser(userId);
         manager.validateManager();
@@ -40,8 +42,11 @@ public class AttendanceFacade {
         final Schedule schedule =
                 scheduleService.getScheduleByDateAndGenerationId(today, user.getGenerationId());
         qrService.extractTokenIfValid(qrCode);
-        attendanceService.checkInByQrCode(
-                user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
+        final AttendanceStatus status =
+                attendanceService.checkInByQrCode(
+                        user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
+
+        return AttendanceCheckInResponse.from(status);
     }
 
     @Transactional(readOnly = true)

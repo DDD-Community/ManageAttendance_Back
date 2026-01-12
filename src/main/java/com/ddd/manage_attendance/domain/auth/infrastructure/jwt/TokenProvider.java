@@ -39,16 +39,17 @@ public class TokenProvider {
         long now = (new Date()).getTime();
         Date validityDate = new Date(now + validity);
 
-        var builder = Jwts.builder()
-                .subject(subject)
-                .issuedAt(new Date())
-                .expiration(validityDate)
-                .signWith(key);
-        
+        var builder =
+                Jwts.builder()
+                        .subject(subject)
+                        .issuedAt(new Date())
+                        .expiration(validityDate)
+                        .signWith(key);
+
         if (role != null) {
             builder.claim("role", role.name());
         }
-                
+
         return builder.compact();
     }
 
@@ -65,7 +66,7 @@ public class TokenProvider {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         return Long.parseLong(claims.getSubject());
     }
-    
+
     public String getRole(String token) {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
         return claims.get("role", String.class);
