@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.auth.api.dto.UserUpdateRequest;
 import com.ddd.manage_attendance.domain.auth.api.dto.UserWithdrawRequest;
 import com.ddd.manage_attendance.domain.auth.domain.UserFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,7 +45,8 @@ public class UserController {
 
     @GetMapping("/{id}/qr")
     @Operation(summary = "[공개] 유저 QR 조회", description = "유저의 QR 코드를 조회합니다.\n\n" + "- 인증 불필요")
-    public UserQrResponse getUserQr(@PathVariable final Long id) {
+    public UserQrResponse getUserQr(
+            @Parameter(description = "사용자 ID", example = "1") @PathVariable final Long id) {
         return userFacade.getUserQr(id);
     }
 
@@ -75,7 +77,10 @@ public class UserController {
     }
 
     @PostMapping("/attendances/missing/generate")
-    @Operation(summary = "누락 된 유저 출석 기록 저장", description = "누락 된 유저 출석 기록을 저장 합니다.")
+    @Operation(
+            summary = "[인증] 누락 출석 기록 생성",
+            description = "누락된 유저의 출석 기록을 자동으로 생성합니다.\n\n" + "- JWT 토큰 필요")
+    @SecurityRequirement(name = "JWT")
     public void generateMissingAttendances(@AuthenticationPrincipal Long userId) {
         userFacade.generateMissingAttendances(userId);
     }

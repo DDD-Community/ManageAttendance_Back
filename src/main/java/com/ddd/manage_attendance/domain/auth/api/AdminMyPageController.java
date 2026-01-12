@@ -8,6 +8,7 @@ import com.ddd.manage_attendance.domain.auth.domain.MyPageFacade;
 import com.ddd.manage_attendance.domain.team.api.dto.TeamResponse;
 import com.ddd.manage_attendance.domain.team.domain.TeamFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
@@ -40,7 +41,9 @@ public class AdminMyPageController {
     @GetMapping("/schedules/{scheduleId}/attendances")
     @Operation(summary = "[운영진] 기수 출석 현황 요약 조회", description = "기수 출석 현황 요약을 조회합니다.")
     public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
-            @AuthenticationPrincipal Long userId, @PathVariable @Positive final Long scheduleId) {
+            @AuthenticationPrincipal Long userId,
+            @Parameter(description = "스케줄 ID", example = "1") @PathVariable @Positive
+                    final Long scheduleId) {
         return attendanceFacade.getGenerationAttendanceSummaryByScheduleId(userId, scheduleId);
     }
 
@@ -55,8 +58,10 @@ public class AdminMyPageController {
     @Operation(summary = "[운영진] 세션별 팀 멤버 출석 현황 조회", description = "특정 세션의 팀 멤버 출석 현황을 조회합니다.")
     public List<TeamAttendancesResponse> getTeamAttendancesByScheduleId(
             @AuthenticationPrincipal final Long userId,
-            @PathVariable @Positive final Long scheduleId,
-            @PathVariable @Positive final Long teamId) {
+            @Parameter(description = "스케줄 ID", example = "1") @PathVariable @Positive
+                    final Long scheduleId,
+            @Parameter(description = "팀 ID", example = "1") @PathVariable @Positive
+                    final Long teamId) {
         return attendanceFacade.getTeamAttendancesByScheduleId(userId, scheduleId, teamId);
     }
 }

@@ -11,6 +11,7 @@ import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
 import com.ddd.manage_attendance.domain.team.api.dto.TeamResponse;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,9 @@ public class OnboardingController {
 
     @GetMapping("/verify-code")
     @Operation(summary = "초대 코드 검증", description = "입력한 초대 코드가 유효한지 확인하고 기수 정보를 반환합니다.")
-    public CheckInvitationCodeResponse verifyCode(@RequestParam String code) {
+    public CheckInvitationCodeResponse verifyCode(
+            @Parameter(description = "초대 코드", example = "1234") @RequestParam
+                    String code) {
         Invitation invitation = invitationService.verifyCode(code);
         String generationName = generationService.getGenerationName(invitation.getGenerationId());
         return CheckInvitationCodeResponse.from(invitation, generationName);
@@ -46,7 +49,8 @@ public class OnboardingController {
 
     @GetMapping("/teams")
     @Operation(summary = "팀 목록 조회", description = "특정 기수의 팀 목록을 반환합니다.")
-    public List<TeamResponse> getTeams(@RequestParam Long generationId) {
+    public List<TeamResponse> getTeams(
+            @Parameter(description = "기수 ID", example = "1") @RequestParam Long generationId) {
         return TeamResponse.fromList(teamService.findAllByGenerationId(generationId));
     }
 
