@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusRespo
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceFacade;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
@@ -58,7 +59,8 @@ public class AttendanceController {
     @SecurityRequirement(name = "JWT")
     public void modifyAttendance(
             @AuthenticationPrincipal final Long userId,
-            @PathVariable @Positive Long attendanceId,
+            @Parameter(description = "출석 ID", example = "1") @PathVariable @Positive
+                    Long attendanceId,
             @RequestBody final AttendanceStatusModifyRequest request) {
         attendanceFacade.modifyAttendance(userId, attendanceId, request);
     }
