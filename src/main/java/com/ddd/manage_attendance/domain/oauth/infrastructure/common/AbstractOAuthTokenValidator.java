@@ -4,7 +4,7 @@ import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import io.jsonwebtoken.Jwts;
 import java.security.PublicKey;
-import java.time.Instant;
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -58,7 +58,6 @@ public abstract class AbstractOAuthTokenValidator<T extends OAuthUserInfo> {
     private void validateClaims(T userInfo) {
         validateIssuer(userInfo);
         validateAudience(userInfo);
-        // validateExpiration(userInfo); // Jwts.parser()에서 이미 검증 (clockSkew 적용됨)
     }
 
     private void validateIssuer(T userInfo) {
@@ -74,12 +73,6 @@ public abstract class AbstractOAuthTokenValidator<T extends OAuthUserInfo> {
         }
         if (userInfo.getAud() == null || !clientId.equals(userInfo.getAud())) {
             throw new OAuthTokenValidationException(getProvider(), "유효하지 않은 클라이언트 ID입니다.");
-        }
-    }
-
-    private void validateExpiration(T userInfo) {
-        if (userInfo.getExp() != null && userInfo.getExp() < Instant.now().getEpochSecond()) {
-            throw new OAuthTokenValidationException(getProvider(), "토큰이 만료되었습니다.");
         }
     }
 }
