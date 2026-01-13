@@ -18,6 +18,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final String[] AUTH_WHITELIST = {
+            "/api/auth/login",
+            "/api/auth/refresh"
+    };
+
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -25,8 +36,15 @@ public class SecurityConfig {
 
         http.csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (개발환경에서만)
                 .authorizeHttpRequests(
-                        auth -> auth.anyRequest().permitAll() // 모든 요청 허용
-                        )
+                        auth ->
+                                auth.requestMatchers(AUTH_WHITELIST)
+                                        .permitAll()
+                                        .requestMatchers(SWAGGER_WHITELIST)
+                                        .permitAll()
+                                        .requestMatchers("/h2-console/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .authenticated())
                 .headers(
                         headers ->
                                 headers.frameOptions(

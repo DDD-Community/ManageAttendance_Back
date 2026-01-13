@@ -37,7 +37,7 @@ apple:
 
 jwt:
   secret: ${JWT_SECRET:}
-  access-token-validity-in-seconds: 3600 # 1 hour
+  access-token-validity-in-seconds: 43200 # 12 hours
   refresh-token-validity-in-seconds: 1209600 # 14 days
 
 springdoc:
