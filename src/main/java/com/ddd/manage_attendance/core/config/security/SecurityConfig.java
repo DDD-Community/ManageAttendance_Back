@@ -19,17 +19,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
-            "/api/auth/login",
-            "/api/auth/refresh",
-            "/api/onboarding/**",
-            "/error",
-            "/api/users"
+        "/api/auth/login",
+        "/api/auth/refresh",
+        "/api/onboarding/**",
+        "/error",
+        "/api/users",
+        "/api/users/*/qr",
+        "/api/attendances/status"
     };
 
     private static final String[] SWAGGER_WHITELIST = {
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html"
+        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
