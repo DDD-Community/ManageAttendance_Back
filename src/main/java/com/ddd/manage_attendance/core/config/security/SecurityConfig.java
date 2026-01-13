@@ -20,7 +20,10 @@ public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
             "/api/auth/login",
-            "/api/auth/refresh"
+            "/api/auth/refresh",
+            "/api/onboarding/**",
+            "/error",
+            "/api/users"
     };
 
     private static final String[] SWAGGER_WHITELIST = {
