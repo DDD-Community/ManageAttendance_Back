@@ -22,7 +22,7 @@ public record ScheduleWithAttendanceResponse(
                 schedule.getId(),
                 schedule.getName(),
                 attendanceStatusByScheduleIndex.getOrDefault(
-                        schedule.getId(), AttendanceStatus.NONE),
+                        schedule.getId(), schedule.statusByDate()),
                 schedule.getDescription(),
                 schedule.getDate().getMonthValue(),
                 schedule.getDate().getDayOfMonth());

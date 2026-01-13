@@ -4,7 +4,6 @@ import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import io.jsonwebtoken.Jwts;
 import java.security.PublicKey;
-
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

@@ -17,12 +17,14 @@ public class GoogleOAuthService implements OAuthService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token=";
+    private static final String TOKEN_INFO_URL =
+            "https://oauth2.googleapis.com/tokeninfo?id_token=";
 
     @Override
     public OAuthUserInfo authenticate(String idToken) {
         try {
-            GoogleUserInfo userInfo = restTemplate.getForObject(TOKEN_INFO_URL + idToken, GoogleUserInfo.class);
+            GoogleUserInfo userInfo =
+                    restTemplate.getForObject(TOKEN_INFO_URL + idToken, GoogleUserInfo.class);
 
             if (userInfo == null) {
                 throw new OAuthTokenValidationException("Google", "구글 API 응답이 비어있습니다.");

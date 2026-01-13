@@ -91,12 +91,15 @@ public class AttendanceFacade {
         final List<Attendance> attendances =
                 attendanceService.findAllUsersAttendancesByScheduleId(userIds, scheduleId);
 
+        final Schedule schedule = scheduleService.getScheduleById(scheduleId);
+        final AttendanceStatus status = schedule.statusByDate();
+
         final AttendanceStatusByUserIndex statusIndex =
                 AttendanceStatusByUserIndex.from(attendances);
         final AttendanceByUserIndex attendanceIndex = AttendanceByUserIndex.from(attendances);
 
         return TeamAttendancesResponse.fromList(
-                teamUsers, team.getName(), statusIndex, attendanceIndex);
+                teamUsers, team.getName(), statusIndex, attendanceIndex, status);
     }
 
     @Transactional

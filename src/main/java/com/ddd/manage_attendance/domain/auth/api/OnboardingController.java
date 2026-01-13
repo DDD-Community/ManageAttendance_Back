@@ -34,8 +34,7 @@ public class OnboardingController {
     @GetMapping("/verify-code")
     @Operation(summary = "초대 코드 검증", description = "입력한 초대 코드가 유효한지 확인하고 기수 정보를 반환합니다.")
     public CheckInvitationCodeResponse verifyCode(
-            @Parameter(description = "초대 코드", example = "1234") @RequestParam
-                    String code) {
+            @Parameter(description = "초대 코드", example = "1234") @RequestParam String code) {
         Invitation invitation = invitationService.verifyCode(code);
         String generationName = generationService.getGenerationName(invitation.getGenerationId());
         return CheckInvitationCodeResponse.from(invitation, generationName);

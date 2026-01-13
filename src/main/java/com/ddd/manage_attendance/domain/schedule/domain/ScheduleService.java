@@ -36,4 +36,9 @@ public class ScheduleService {
         return scheduleRepository.findAllByGenerationIdAndDateBeforeOrderByDateAsc(
                 generationId, date);
     }
+
+    @Transactional(readOnly = true)
+    public Schedule getScheduleById(final Long scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElseThrow(NoScheduleException::new);
+    }
 }

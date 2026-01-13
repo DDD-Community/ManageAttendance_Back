@@ -25,22 +25,31 @@ public record TeamAttendancesResponse(
             final User user,
             final String teamName,
             final AttendanceStatusByUserIndex attendanceStatusByUserIndex,
-            final AttendanceByUserIndex attendanceByUserIndex) {
+            final AttendanceByUserIndex attendanceByUserIndex,
+            final AttendanceStatus attendanceStatus) {
         return new TeamAttendancesResponse(
                 attendanceByUserIndex.get(user.getId()),
                 user.getId(),
                 user.getName(),
                 userInfoOf(teamName, user),
-                attendanceStatusByUserIndex.getOrDefault(user.getId(), AttendanceStatus.NONE));
+                attendanceStatusByUserIndex.getOrDefault(user.getId(), attendanceStatus));
     }
 
     public static List<TeamAttendancesResponse> fromList(
             final List<User> users,
             final String teamName,
             final AttendanceStatusByUserIndex attendanceStatusByUserIndex,
-            final AttendanceByUserIndex attendanceByUserIndex) {
+            final AttendanceByUserIndex attendanceByUserIndex,
+            final AttendanceStatus attendanceStatus) {
         return users.stream()
-                .map(u -> from(u, teamName, attendanceStatusByUserIndex, attendanceByUserIndex))
+                .map(
+                        u ->
+                                from(
+                                        u,
+                                        teamName,
+                                        attendanceStatusByUserIndex,
+                                        attendanceByUserIndex,
+                                        attendanceStatus))
                 .collect(Collectors.toList());
     }
 }

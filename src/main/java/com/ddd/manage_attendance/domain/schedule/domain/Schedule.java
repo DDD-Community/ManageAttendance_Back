@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.schedule.domain;
 
 import com.ddd.manage_attendance.core.common.BaseEntity;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,4 +50,14 @@ public class Schedule extends BaseEntity {
     @Comment("기수 Id")
     @Column(name = "generation_id", columnDefinition = "bigint")
     private Long generationId;
+
+    public AttendanceStatus statusByDate() {
+        final LocalDate today = LocalDate.now();
+
+        if (this.date.isBefore(today)) {
+            return AttendanceStatus.ABSENT;
+        }
+
+        return AttendanceStatus.NONE;
+    }
 }

@@ -22,13 +22,28 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             """
             SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
                 COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1L ELSE 0L END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1L ELSE 0L END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1L ELSE 0L END), 0L))
-            FROM Attendance a
-            JOIN Schedule s ON a.scheduleId = s.id
-            WHERE a.userId = :userId
-              AND s.generationId = :generationId
-            """)
+
+                COALESCE(SUM(
+                    CASE
+                        WHEN s.date < CURRENT_DATE THEN
+                            CASE
+                                WHEN a.id IS NULL OR a.status = 'ABSENT' THEN 1L ELSE 0L
+                            END
+                        ELSE
+                            CASE
+                                WHEN a.status = 'ABSENT' THEN 1L ELSE 0L
+                            END
+                    END
+                ), 0L),
+
+                COALESCE(SUM(CASE WHEN a.status = 'LATE' THEN 1L ELSE 0L END), 0L)
+            )
+            FROM Schedule s
+            LEFT JOIN Attendance a
+                ON a.scheduleId = s.id
+               AND a.userId = :userId
+            WHERE s.generationId = :generationId
+""")
     @QueryHints(
             @QueryHint(
                     name = "org.hibernate.comment",
@@ -39,14 +54,35 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @Query(
             """
-            SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
-                  COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1L ELSE 0L END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'ABSENT'  THEN 1L ELSE 0L END), 0L),
-                COALESCE(SUM(CASE WHEN a.status = 'LATE'    THEN 1L ELSE 0L END), 0L))
-            FROM Attendance a
-            JOIN Schedule s ON a.scheduleId = s.id
-            WHERE s.id = :scheduleId
-            """)
+                SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
+                    COALESCE(SUM(CASE WHEN a.status = 'ATTENDED' THEN 1L ELSE 0L END), 0L),
+
+                    COALESCE(SUM(
+                        CASE
+                            WHEN s.date < CURRENT_DATE THEN
+                                CASE
+                                    WHEN a.status = 'ABSENT' OR a.id IS NULL THEN 1L
+                                    ELSE 0L
+                                END
+                            ELSE
+                                CASE
+                                    WHEN a.status = 'ABSENT' THEN 1L
+                                    ELSE 0L
+                                END
+                        END
+                    ), 0L),
+
+                    COALESCE(SUM(CASE WHEN a.status = 'LATE' THEN 1L ELSE 0L END), 0L)
+                )
+                FROM Schedule s
+                JOIN User u
+                    ON u.generationId = s.generationId
+                LEFT JOIN Attendance a
+                    ON a.scheduleId = s.id
+                   AND a.userId = u.id
+                WHERE s.id = :scheduleId
+                GROUP BY s.id
+""")
     @QueryHints(
             @QueryHint(
                     name = "org.hibernate.comment",
