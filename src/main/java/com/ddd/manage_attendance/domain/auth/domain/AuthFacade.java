@@ -1,9 +1,11 @@
 package com.ddd.manage_attendance.domain.auth.domain;
 
+import com.ddd.manage_attendance.core.exception.ErrorCode;
 import com.ddd.manage_attendance.domain.auth.api.dto.LoginResponse;
 import com.ddd.manage_attendance.domain.auth.api.dto.RefreshTokenResponse;
 import com.ddd.manage_attendance.domain.auth.infrastructure.jwt.TokenProvider;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
+import com.ddd.manage_attendance.domain.oauth.exception.OAuthServiceException;
 import com.ddd.manage_attendance.domain.oauth.infrastructure.common.OAuthServiceResolver;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -112,12 +114,12 @@ public class AuthFacade {
 
     private void validateOAuthUserInfo(final OAuthUserInfo oauthUserInfo) {
         if (oauthUserInfo == null) {
-            throw new IllegalStateException("OAuth 사용자 정보를 가져올 수 없습니다.");
+            throw new OAuthServiceException(ErrorCode.OAUTH_USER_INFO_NOT_FOUND);
         }
 
         final String sub = oauthUserInfo.getSub();
         if (sub == null || sub.trim().isEmpty()) {
-            throw new IllegalStateException("OAuth 사용자 ID(sub)가 없습니다.");
+            throw new OAuthServiceException(ErrorCode.OAUTH_USER_ID_NOT_FOUND);
         }
     }
 }

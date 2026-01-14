@@ -1,8 +1,10 @@
 package com.ddd.manage_attendance.domain.oauth.infrastructure.google;
 
+import com.ddd.manage_attendance.core.exception.ErrorCode;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
+import com.ddd.manage_attendance.domain.oauth.exception.OAuthServiceException;
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +19,14 @@ public class GoogleOAuthService implements OAuthService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token=";
+    private static final String TOKEN_INFO_URL =
+            "https://oauth2.googleapis.com/tokeninfo?id_token=";
 
     @Override
     public OAuthUserInfo authenticate(String idToken) {
         try {
-            GoogleUserInfo userInfo = restTemplate.getForObject(TOKEN_INFO_URL + idToken, GoogleUserInfo.class);
+            GoogleUserInfo userInfo =
+                    restTemplate.getForObject(TOKEN_INFO_URL + idToken, GoogleUserInfo.class);
 
             if (userInfo == null) {
                 throw new OAuthTokenValidationException("Google", "구글 API 응답이 비어있습니다.");
@@ -44,7 +48,10 @@ public class GoogleOAuthService implements OAuthService {
         try {
             restTemplate.postForLocation(revokeUrl, null);
         } catch (Exception e) {
-            throw new RuntimeException("Google OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_REVOKE_FAILED,
+                    "Google OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(),
+                    e);
         }
     }
 }
