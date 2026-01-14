@@ -31,9 +31,7 @@ public class SwaggerConfig {
                 .info(
                         new Info()
                                 .title("출석앱 API")
-                                .description(
-                                        "DDD 출석앱 SWAGGER UI입니다.\n\n"
-                                                + "자세한 인증 및 회원가입 플로우는 프로젝트 루트의 `API_GUIDE.md` 파일을 참고해주세요."));
+                                .description("DDD 출석앱 SWAGGER UI입니다."));
     }
 
     @Bean
