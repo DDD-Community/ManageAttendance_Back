@@ -2,7 +2,6 @@ package com.ddd.manage_attendance.core.config.swagger;
 
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.info.Info;
@@ -29,28 +28,6 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI apiConfig() {
         return new OpenAPI()
-                .components(
-                        new Components()
-                                .addSchemas(
-                                        "ErrorResponse",
-                                        new Schema<>()
-                                                .type("object")
-                                                .description("표준 에러 응답")
-                                                .addProperty(
-                                                        "code",
-                                                        new StringSchema()
-                                                                .description("에러 코드")
-                                                                .example("ERROR_CODE"))
-                                                .addProperty(
-                                                        "message",
-                                                        new StringSchema()
-                                                                .description("에러 메시지")
-                                                                .example("에러가 발생했습니다."))
-                                                .addProperty(
-                                                        "detail",
-                                                        new StringSchema()
-                                                                .description("상세 정보")
-                                                                .example("필드 유효성 검증 실패"))))
                 .info(
                         new Info()
                                 .title("출석앱 API")
@@ -131,7 +108,21 @@ public class SwaggerConfig {
     private ApiResponse createErrorResponse(
             String description, String summary, String errorCode, String errorMessage) {
         MediaType mediaType = new MediaType();
-        mediaType.setSchema(new Schema<>().$ref("#/components/schemas/ErrorResponse"));
+
+        Schema<Object> schema =
+                new Schema<>()
+                        .type("object")
+                        .description("표준 에러 응답")
+                        .addProperty(
+                                "code", new StringSchema().description("에러 코드").example(errorCode))
+                        .addProperty(
+                                "message",
+                                new StringSchema().description("에러 메시지").example(errorMessage))
+                        .addProperty(
+                                "detail",
+                                new StringSchema().description("상세 정보").example("필드 유효성 검증 실패"));
+
+        mediaType.setSchema(schema);
 
         Example example = new Example();
         example.setSummary(summary);
