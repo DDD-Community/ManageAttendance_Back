@@ -3,6 +3,8 @@ package com.ddd.manage_attendance.domain.oauth.infrastructure.common;
 import static com.ddd.manage_attendance.core.common.util.Base64Util.decodeBase64UrlToBigInteger;
 import static com.ddd.manage_attendance.domain.oauth.infrastructure.common.JWKConstants.*;
 
+import com.ddd.manage_attendance.core.exception.ErrorCode;
+import com.ddd.manage_attendance.domain.oauth.exception.OAuthServiceException;
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigInteger;
@@ -153,7 +155,8 @@ public class OAuthPublicKeyService {
             parameters.init(new ECGenParameterSpec(EC_CURVE_SECP256R1));
             return parameters.getParameterSpec(ECParameterSpec.class);
         } catch (Exception e) {
-            throw new RuntimeException("EC ParameterSpec 생성에 실패했습니다.", e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_KEY_PARSING_FAILED, "EC ParameterSpec 생성에 실패했습니다.", e);
         }
     }
 

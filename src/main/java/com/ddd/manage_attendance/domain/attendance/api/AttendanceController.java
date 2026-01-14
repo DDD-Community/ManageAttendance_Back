@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,12 +37,16 @@ public class AttendanceController {
     @Operation(
             summary = "[운영진] 출석 체크",
             description =
-                    "QR 코드를 스캔하여 사용자의 출석을 체크합니다.\n\n" + "- 운영진 권한 필수\n" + "- QR 코드 검증 후 출석 처리")
+                    "QR 코드를 스캔하여 사용자의 출석을 체크합니다.\n\n"
+                            + "- 운영진 권한 필수\n"
+                            + "- QR 코드 검증 후 출석 처리\n"
+                            + "- 성공 시 201 Created 반환")
     @SecurityRequirement(name = "JWT")
-    public AttendanceCheckInResponse checkIn(
+    public ResponseEntity<AttendanceCheckInResponse> checkIn(
             @AuthenticationPrincipal final Long userId,
             @RequestBody final AttendanceCheckInRequest request) {
-        return attendanceFacade.checkInByQrCode(userId, request);
+        AttendanceCheckInResponse response = attendanceFacade.checkInByQrCode(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/status")

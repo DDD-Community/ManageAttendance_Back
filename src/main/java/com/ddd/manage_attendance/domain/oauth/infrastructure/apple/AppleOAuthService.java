@@ -1,8 +1,10 @@
 package com.ddd.manage_attendance.domain.oauth.infrastructure.apple;
 
+import com.ddd.manage_attendance.core.exception.ErrorCode;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
+import com.ddd.manage_attendance.domain.oauth.exception.OAuthServiceException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -50,7 +52,8 @@ public class AppleOAuthService implements OAuthService {
         String clientSecret = createClientSecret();
         AppleTokenResponse tokenResponse = getAppleToken(codeOrToken, clientSecret);
         if (tokenResponse == null || tokenResponse.idToken() == null) {
-            throw new RuntimeException("Apple ID Token 발급 실패");
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_TOKEN_ISSUE_FAILED, "Apple ID Token 발급 실패");
         }
         AppleUserInfo userInfo =
                 (AppleUserInfo) appleTokenValidator.validate(tokenResponse.idToken());
@@ -89,7 +92,10 @@ public class AppleOAuthService implements OAuthService {
 
             restTemplate.postForLocation(url, httpRequest);
         } catch (Exception e) {
-            throw new RuntimeException("Apple OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_REVOKE_FAILED,
+                    "Apple OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -111,7 +117,10 @@ public class AppleOAuthService implements OAuthService {
         try {
             return restTemplate.postForObject(url, httpRequest, AppleTokenResponse.class);
         } catch (Exception e) {
-            throw new RuntimeException("Apple Token 교환 중 오류 발생: " + e.getMessage(), e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED,
+                    "Apple Token 교환 중 오류 발생: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -148,7 +157,8 @@ public class AppleOAuthService implements OAuthService {
             KeyFactory keyFactory = KeyFactory.getInstance("EC");
             return keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            throw new RuntimeException("Apple Private Key 파싱 실패. 키 값을 확인해주세요.", e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_KEY_PARSING_FAILED, "Apple Private Key 파싱 실패. 키 값을 확인해주세요.", e);
         }
     }
 

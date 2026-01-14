@@ -1,8 +1,10 @@
 package com.ddd.manage_attendance.domain.oauth.infrastructure.google;
 
+import com.ddd.manage_attendance.core.exception.ErrorCode;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthService;
 import com.ddd.manage_attendance.domain.oauth.domain.OAuthUserInfo;
 import com.ddd.manage_attendance.domain.oauth.domain.dto.OAuthRevocationRequest;
+import com.ddd.manage_attendance.domain.oauth.exception.OAuthServiceException;
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +48,10 @@ public class GoogleOAuthService implements OAuthService {
         try {
             restTemplate.postForLocation(revokeUrl, null);
         } catch (Exception e) {
-            throw new RuntimeException("Google OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(), e);
+            throw new OAuthServiceException(
+                    ErrorCode.OAUTH_REVOKE_FAILED,
+                    "Google OAuth 철회 중 오류가 발생했습니다. cause: " + e.getMessage(),
+                    e);
         }
     }
 }
