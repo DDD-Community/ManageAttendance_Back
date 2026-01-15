@@ -22,12 +22,10 @@ import org.hibernate.annotations.Comment;
 @Table(
         name = "attendance",
         uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_attendance_schedule_member",
-                        columnNames = {"schedule_id", "member_id"}
-                )
-        }
-)
+            @UniqueConstraint(
+                    name = "uk_attendance_schedule_member",
+                    columnNames = {"schedule_id", "member_id"})
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Attendance extends BaseEntity {
 
@@ -59,7 +57,7 @@ public class Attendance extends BaseEntity {
         this.status = status;
     }
 
-    public static Attendance checkIn(Long userId, Long scheduleId, AttendanceStatus status) {
+    public static Attendance create(Long userId, Long scheduleId, AttendanceStatus status) {
         return Attendance.builder().userId(userId).scheduleId(scheduleId).status(status).build();
     }
 

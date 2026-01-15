@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
 import com.ddd.manage_attendance.core.exception.DataNotFoundException;
+import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import java.time.LocalDate;
@@ -8,7 +9,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,15 +74,49 @@ public class AttendanceService {
         return attendanceRepository.findByScheduleIdAndUserIdIn(scheduleId, userIds);
     }
 
-    @Transactional(readOnly = true)
-    public Attendance findAttendanceById(final Long attendanceId) {
-        return attendanceRepository.findById(attendanceId).orElseThrow(DataNotFoundException::new);
-    }
-
     @Transactional
     public void saveAttendance(
             final Long userId, final Long scheduleId, final AttendanceStatus status) {
-        attendanceRepository.save(Attendance.checkIn(userId, scheduleId, status));
+        attendanceRepository.save(Attendance.create(userId, scheduleId, status));
+    }
+
+    @Transactional
+    public void upsertAttendance(final AttendanceStatusModifyRequest request) {
+        if (request.attendanceId() != null) {
+            final Attendance attendance =
+                    attendanceRepository
+                            .findById(request.attendanceId())
+                            .orElseThrow(DataNotFoundException::new);
+
+            if (!Objects.equals(attendance.getUserId(), request.userId())) {
+                throw new NotUserAttendanceException();
+            }
+            attendance.modifyStatus(request.status());
+            return;
+        }
+
+        final Attendance attendance =
+                attendanceRepository
+                        .findByUserIdAndScheduleId(request.userId(), request.scheduleId())
+                        .orElseGet(
+                                () ->
+                                        createAttendanceSafely(
+                                                request.userId(),
+                                                request.scheduleId(),
+                                                request.status()));
+
+        attendance.modifyStatus(request.status());
+    }
+
+    private Attendance createAttendanceSafely(
+            final Long userId, final Long scheduleId, final AttendanceStatus status) {
+        try {
+            return attendanceRepository.save(Attendance.create(userId, scheduleId, status));
+        } catch (DataIntegrityViolationException e) {
+            return attendanceRepository
+                    .findByUserIdAndScheduleId(userId, scheduleId)
+                    .orElseThrow(() -> e);
+        }
     }
 
     public List<AttendanceStatusResponse> getStatus() {

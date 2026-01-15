@@ -155,13 +155,4 @@ public class UserController {
         String oauthToken = request != null ? request.token() : null;
         userFacade.withdrawUser(userId, oauthToken);
     }
-
-    @PostMapping("/attendances/missing/generate")
-    @Operation(
-            summary = "[인증] 누락 출석 기록 생성",
-            description = "누락된 유저의 출석 기록을 자동으로 생성합니다.\n\n" + "- JWT 토큰 필요")
-    @SecurityRequirement(name = "JWT")
-    public void generateMissingAttendances(@AuthenticationPrincipal Long userId) {
-        userFacade.generateMissingAttendances(userId);
-    }
 }

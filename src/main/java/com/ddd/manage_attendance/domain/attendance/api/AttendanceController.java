@@ -7,17 +7,14 @@ import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusRespo
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceFacade;
 import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Positive;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,7 +54,7 @@ public class AttendanceController {
         return attendanceService.getStatus();
     }
 
-    @PutMapping("/{attendanceId}")
+    @PutMapping
     @Operation(
             summary = "[운영진] 출석 상태 변경",
             description =
@@ -65,9 +62,7 @@ public class AttendanceController {
     @SecurityRequirement(name = "JWT")
     public void modifyAttendance(
             @AuthenticationPrincipal final Long userId,
-            @Parameter(description = "출석 ID", example = "1") @PathVariable @Positive
-                    Long attendanceId,
             @RequestBody final AttendanceStatusModifyRequest request) {
-        attendanceFacade.modifyAttendance(userId, attendanceId, request);
+        attendanceFacade.modifyAttendance(userId, request);
     }
 }

@@ -18,6 +18,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     List<Attendance> findByScheduleIdAndUserIdIn(Long scheduleId, List<Long> userIds);
 
+    Optional<Attendance> findByUserIdAndScheduleId(Long userId, Long scheduleId);
+
     @Query(
             """
             SELECT new com.ddd.manage_attendance.domain.attendance.domain.AttendanceSummary(
