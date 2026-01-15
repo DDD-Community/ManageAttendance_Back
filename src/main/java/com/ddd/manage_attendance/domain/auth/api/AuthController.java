@@ -70,7 +70,8 @@ public class AuthController {
                                                   "isNewUser": false,
                                                   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                                                   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                                                  "oauthRefreshToken": null
+                                                  "oauthRefreshToken": null,
+                                                  "role": "MEMBER"
                                                 }
                                                 """))),
                 @ApiResponse(
@@ -93,7 +94,8 @@ public class AuthController {
                                                   "isNewUser": true,
                                                   "accessToken": null,
                                                   "refreshToken": null,
-                                                  "oauthRefreshToken": "1//0gWxxx..."
+                                                  "oauthRefreshToken": "1//0gWxxx...",
+                                                  "role": null
                                                 }
                                                 """)))
             })
