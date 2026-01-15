@@ -1,4 +1,3 @@
-
 package com.ddd.manage_attendance.domain.oauth.exception;
 
 import com.ddd.manage_attendance.core.exception.BaseException;

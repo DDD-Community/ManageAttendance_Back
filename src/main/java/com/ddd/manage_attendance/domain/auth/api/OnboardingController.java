@@ -56,7 +56,10 @@ public class OnboardingController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = CheckInvitationCodeResponse.class),
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                CheckInvitationCodeResponse.class),
                                         examples =
                                                 @ExampleObject(
                                                         value =
