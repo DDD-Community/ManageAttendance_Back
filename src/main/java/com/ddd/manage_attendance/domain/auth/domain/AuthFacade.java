@@ -50,7 +50,8 @@ public class AuthFacade {
 
             saveRefreshToken(user.getId(), refreshToken);
 
-            return LoginResponse.from(user, accessToken, refreshToken, oauthRefreshToken, false);
+            return LoginResponse.from(
+                    user, accessToken, refreshToken, oauthRefreshToken, false, user.getRole());
         }
 
         return new LoginResponse(
@@ -62,7 +63,8 @@ public class AuthFacade {
                 true,
                 null,
                 null,
-                oauthUserInfo.getRefreshToken());
+                oauthUserInfo.getRefreshToken(),
+                null);
     }
 
     @Transactional

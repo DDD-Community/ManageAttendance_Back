@@ -2,6 +2,7 @@ package com.ddd.manage_attendance.domain.auth.api.dto;
 
 import com.ddd.manage_attendance.domain.auth.domain.OAuthProvider;
 import com.ddd.manage_attendance.domain.auth.domain.User;
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 
 public record LoginResponse(
         Long userId,
@@ -12,13 +13,15 @@ public record LoginResponse(
         @com.fasterxml.jackson.annotation.JsonProperty("isNewUser") boolean isNewUser,
         String accessToken,
         String refreshToken,
-        String oauthRefreshToken) {
+        String oauthRefreshToken,
+        UserRole role) {
     public static LoginResponse from(
             User user,
             String accessToken,
             String refreshToken,
             String oauthRefreshToken,
-            boolean isNewUser) {
+            boolean isNewUser,
+            UserRole role) {
         return new LoginResponse(
                 user.getId(),
                 user.getName(),
@@ -28,6 +31,7 @@ public record LoginResponse(
                 isNewUser,
                 accessToken,
                 refreshToken,
-                oauthRefreshToken);
+                oauthRefreshToken,
+                role);
     }
 }
