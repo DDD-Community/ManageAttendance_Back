@@ -28,10 +28,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI apiConfig() {
         return new OpenAPI()
-                .info(
-                        new Info()
-                                .title("출석앱 API")
-                                .description("DDD 출석앱 SWAGGER UI입니다."));
+                .info(new Info().title("출석앱 API").description("DDD 출석앱 SWAGGER UI입니다."));
     }
 
     @Bean

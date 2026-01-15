@@ -130,7 +130,10 @@ public class AuthController {
                         content =
                                 @Content(
                                         mediaType = "application/json",
-                                        schema = @Schema(implementation = RefreshTokenResponse.class),
+                                        schema =
+                                                @Schema(
+                                                        implementation =
+                                                                RefreshTokenResponse.class),
                                         examples =
                                                 @ExampleObject(
                                                         value =
