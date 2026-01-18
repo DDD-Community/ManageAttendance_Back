@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import jakarta.persistence.QueryHint;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -82,14 +83,14 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
                 LEFT JOIN Attendance a
                     ON a.scheduleId = s.id
                    AND a.userId = u.id
-                WHERE s.id = :scheduleId
+                WHERE s.id = :scheduleId and u.role  <> :managerRole
                 GROUP BY s.id
 """)
     @QueryHints(
             @QueryHint(
                     name = "org.hibernate.comment",
                     value = "AttendanceRepository.findStatusSummaryByGenerationId: 현재 기수 출석 현황 조회"))
-    AttendanceSummary findStatusSummaryByScheduleId(@Param("scheduleId") Long scheduleId);
+    AttendanceSummary findStatusSummaryByScheduleId(@Param("scheduleId") Long scheduleId,@Param("managerRole") UserRole managerRole);
 
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Attendance a WHERE a.userId = :userId")

@@ -10,6 +10,8 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -58,7 +60,7 @@ public class AttendanceService {
     public AttendanceSummaryResponse getGenerationAttendanceSummaryByScheduleId(
             final Long scheduleId) {
         final AttendanceSummary attendanceSummary =
-                attendanceRepository.findStatusSummaryByScheduleId(scheduleId);
+                attendanceRepository.findStatusSummaryByScheduleId(scheduleId, UserRole.MANAGER);
         return AttendanceSummaryResponse.from(attendanceSummary);
     }
 
