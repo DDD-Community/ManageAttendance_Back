@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
     public User getUser(final Long id) {
@@ -77,6 +78,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(final Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 }
