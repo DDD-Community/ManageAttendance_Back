@@ -18,9 +18,17 @@ public record UserInfoResponse(
         @Schema(description = "직군") JobRole jobRole,
         @Schema(description = "유저 역할 (MEMBER/MANAGER)") UserRole role,
         @Schema(description = "매니저 역할 목록") @JsonInclude(JsonInclude.Include.NON_NULL)
-                List<ManagerRole> managerRoles) {
+        List<String> managerRoles) {
 
     public static UserInfoResponse from(User user, String generationName, String teamName) {
+        List<String> managerRoleDescriptions = null;
+        if (user.getManagerRolesOrNull() != null) {
+            managerRoleDescriptions =
+                    user.getManagerRolesOrNull().stream()
+                            .map(ManagerRole::getDescription)
+                            .toList();
+        }
+
         return new UserInfoResponse(
                 user.getId(),
                 user.getName(),
@@ -29,6 +37,6 @@ public record UserInfoResponse(
                 teamName,
                 user.getJob(),
                 user.getRole(),
-                user.getManagerRolesOrNull());
+                managerRoleDescriptions);
     }
 }
