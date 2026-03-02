@@ -13,7 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByOauthProviderAndOauthId(
             @Param("oauthProvider") OAuthProvider oauthProvider, @Param("oauthId") String oauthId);
 
-    List<User> findAllByTeamId(Long teamId);
+    @Query("SELECT u FROM User u WHERE u.teamId = :teamId AND u.id <> :excludeUserId")
+    List<User> findUsersByTeamIdAndExcludeUserId(Long teamId, Long excludeUserId);
 
     List<User> findByNameContaining(String name);
 

@@ -83,7 +83,7 @@ public class AttendanceFacade {
         user.validateManager();
 
         final Team team = teamService.findById(teamId);
-        final List<User> teamUsers = userService.findUsersByTeamId(teamId);
+        final List<User> teamUsers = userService.findUsersByTeamIdAndExcludeUserId(teamId,userId);
 
         final List<Long> userIds = teamUsers.stream().map(User::getId).toList();
 
