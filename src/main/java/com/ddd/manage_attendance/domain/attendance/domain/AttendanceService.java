@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private static final long attendLimitTime = 10;
-    private static final long lateLimitTime = 30;
+    private static final long lateLimitTime = 60;
 
     @Transactional
     public AttendanceStatus checkInByQrCode(
