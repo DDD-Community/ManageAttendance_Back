@@ -90,7 +90,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
             @QueryHint(
                     name = "org.hibernate.comment",
                     value = "AttendanceRepository.findStatusSummaryByGenerationId: 현재 기수 출석 현황 조회"))
-    AttendanceSummary findStatusSummaryByScheduleId(@Param("scheduleId") Long scheduleId,@Param("managerRole") UserRole managerRole);
+    AttendanceSummary findStatusSummaryByScheduleId(
+            @Param("scheduleId") Long scheduleId, @Param("managerRole") UserRole managerRole);
 
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Attendance a WHERE a.userId = :userId")

@@ -29,12 +29,10 @@ public class AttendanceService {
             final Long userId,
             final Long scheduleId,
             final LocalTime scheduleTime,
-            final LocalDate date) {
-        final LocalDateTime start = date.atStartOfDay();
-        final LocalDateTime end = date.plusDays(1).atStartOfDay();
-
-        final LocalTime now = LocalTime.now();
-        final AttendanceStatus status = decideStatus(scheduleTime, now);
+            final LocalDate today,final LocalTime currentTime) {
+        final LocalDateTime start = today.atStartOfDay();
+        final LocalDateTime end = today.plusDays(1).atStartOfDay();
+        final AttendanceStatus status = decideStatus(scheduleTime, currentTime);
 
         attendanceRepository
                 .findByUserIdAndCreatedDateBetween(userId, start, end)

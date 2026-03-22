@@ -1,11 +1,13 @@
 package com.ddd.manage_attendance.domain.attendance.domain;
 
+import com.ddd.manage_attendance.core.util.TimeProvider;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceCheckInResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceStatusModifyRequest;
 import com.ddd.manage_attendance.domain.attendance.api.dto.AttendanceSummaryResponse;
 import com.ddd.manage_attendance.domain.attendance.api.dto.TeamAttendancesResponse;
 import com.ddd.manage_attendance.domain.auth.domain.User;
+import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import com.ddd.manage_attendance.domain.qr.domain.QrService;
 import com.ddd.manage_attendance.domain.schedule.api.dto.ScheduleWithAttendanceResponse;
@@ -14,6 +16,7 @@ import com.ddd.manage_attendance.domain.schedule.domain.ScheduleService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class AttendanceFacade {
     private final ScheduleService scheduleService;
     private final QrService qrService;
     private final TeamService teamService;
+    private final TimeProvider timeProvider;
 
     @Transactional
     public AttendanceCheckInResponse checkInByQrCode(
@@ -37,13 +41,19 @@ public class AttendanceFacade {
 
         final String qrCode = request.qrCode();
         final User user = userService.getUserByQrCode(qrCode);
-        final LocalDate today = LocalDate.now();
+
+        final LocalDate today = timeProvider.nowDate();
+        final LocalTime currentTime = timeProvider.nowTime();
         final Schedule schedule =
                 scheduleService.getScheduleByDateAndGenerationId(today, user.getGenerationId());
         qrService.extractTokenIfValid(qrCode);
         final AttendanceStatus status =
                 attendanceService.checkInByQrCode(
-                        user.getId(), schedule.getId(), schedule.getScheduleTime(), today);
+                        user.getId(),
+                        schedule.getId(),
+                        schedule.getScheduleTime(),
+                        today,
+                        currentTime);
 
         return AttendanceCheckInResponse.from(status);
     }
@@ -83,7 +93,8 @@ public class AttendanceFacade {
         user.validateManager();
 
         final Team team = teamService.findById(teamId);
-        final List<User> teamUsers = userService.findUsersByTeamIdAndExcludeUserId(teamId,userId);
+        final List<User> teamUsers =
+                userService.findUsersByTeamIdAndExcludeUserId(teamId, userId, UserRole.MANAGER);
 
         final List<Long> userIds = teamUsers.stream().map(User::getId).toList();
 

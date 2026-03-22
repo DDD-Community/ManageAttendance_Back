@@ -30,8 +30,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> findUsersByTeamIdAndExcludeUserId(final Long teamId,final  Long excludeUserId) {
-        return userRepository.findUsersByTeamIdAndExcludeUserId(teamId,excludeUserId);
+    public List<User> findUsersByTeamIdAndExcludeUserId(
+            final Long teamId, final Long excludeUserId, final UserRole userRole) {
+        return userRepository.findUsersByTeamIdAndExcludeUserId(teamId, excludeUserId, userRole);
     }
 
     @Transactional
