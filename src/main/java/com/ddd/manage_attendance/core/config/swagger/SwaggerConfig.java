@@ -34,7 +34,7 @@ public class SwaggerConfig {
     @Bean
     public OpenApiCustomizer forceHttpsServerUrl() {
         return openApi ->
-                openApi.setServers(List.of(new Server().url("https://api.dddstudy.site")));
+                openApi.setServers(List.of(new Server().url("https://api.dddstudy..kr")));
     }
 
     @Bean

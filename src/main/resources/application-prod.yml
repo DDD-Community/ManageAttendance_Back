@@ -42,5 +42,5 @@ jwt:
 
 springdoc:
   swagger-ui:
-    url: https://api.dddstudy.site/v3/api-docs
-    oauth2-redirect-url: https://api.dddstudy.site/swagger-ui/oauth2-redirect.html
+    url: https://api.dddstudy.kr/v3/api-docs
+    oauth2-redirect-url: https://api.dddstudy.kr/swagger-ui/oauth2-redirect.html
