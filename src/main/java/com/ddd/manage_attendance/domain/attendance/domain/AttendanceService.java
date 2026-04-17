@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
-    private static final long attendLimitTime = 10;
+    private static final long attendLimitTime = 11;
     private static final long lateLimitTime = 60;
 
     @Transactional
