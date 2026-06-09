@@ -1,9 +1,13 @@
 package com.ddd.manage_attendance.domain.vote.api;
 
+import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackTemplateResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.MyVoteStatusResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteNonRespondersResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
 import com.ddd.manage_attendance.domain.vote.domain.VoteFacade;
@@ -108,5 +112,51 @@ public class VoteController {
             @RequestBody final VoteSubmitRequest request) {
         voteFacade.submit(userId, voteId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/active")
+    @Operation(
+            summary = "[멤버] 진행 중 투표 조회",
+            description =
+                    "내 기수에 진행 중(OPEN)인 투표가 있는지 조회합니다.\n\n"
+                            + "- 홈 메뉴의 '투표(NEW)' 노출/진입 판단에 사용\n"
+                            + "- 없으면 hasActiveVote=false\n"
+                            + "- alreadyResponded 로 완료 화면 분기")
+    @SecurityRequirement(name = "JWT")
+    public ActiveVoteResponse getActiveVote(@AuthenticationPrincipal final Long userId) {
+        return voteFacade.getActiveVote(userId);
+    }
+
+    @GetMapping("/{voteId}/responses/me")
+    @Operation(
+            summary = "[멤버] 내 참여 여부 조회",
+            description = "특정 투표에 내가 이미 참여했는지 조회합니다.\n\n- 완료/재참여 차단 화면 판단에 사용")
+    @SecurityRequirement(name = "JWT")
+    public MyVoteStatusResponse getMyVoteStatus(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getMyVoteStatus(userId, voteId);
+    }
+
+    @GetMapping("/{voteId}/participation")
+    @Operation(
+            summary = "[운영진] 투표 상태 및 참여 현황 조회",
+            description =
+                    "투표 관리 화면 데이터를 조회합니다.\n\n"
+                            + "- 운영진 권한 필수\n"
+                            + "- 투표 상태(DRAFT/OPEN/CLOSED) + 대상 멤버수/참여수/참여율(운영진 제외)")
+    @SecurityRequirement(name = "JWT")
+    public VoteParticipationResponse getParticipation(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getParticipation(userId, voteId);
+    }
+
+    @GetMapping("/{voteId}/non-responders")
+    @Operation(
+            summary = "[운영진] 미참여 멤버 명단 조회",
+            description = "아직 투표하지 않은 멤버 명단(이름 + 소속 팀명)을 조회합니다.\n\n- 운영진 권한 필수")
+    @SecurityRequirement(name = "JWT")
+    public VoteNonRespondersResponse getNonResponders(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getNonResponders(userId, voteId);
     }
 }

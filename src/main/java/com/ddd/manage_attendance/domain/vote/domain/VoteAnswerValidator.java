@@ -55,6 +55,7 @@ public class VoteAnswerValidator {
                                         TeamVoteTemplate.Category::id, Function.identity()));
 
         final Set<String> seenCategoryIds = new HashSet<>();
+        final Set<String> answeredCategoryIds = new HashSet<>();
         for (final TeamVoteCategoryAnswer answer : answers) {
             final TeamVoteTemplate.Category category = categories.get(answer.categoryId());
             if (category == null) {
@@ -81,7 +82,20 @@ public class VoteAnswerValidator {
                     throw new VoteAnswerInvalidException("선택할 수 없는 팀입니다: " + teamId);
                 }
             }
-            validateReason(category, answer.reason(), !teamIds.isEmpty());
+
+            final boolean teamSelected = !teamIds.isEmpty();
+            if (teamSelected) {
+                answeredCategoryIds.add(answer.categoryId());
+            }
+            validateReason(category, answer.reason(), teamSelected);
+        }
+
+        // 모든 부문 필수: 템플릿의 각 부문에 1개 이상 팀 선택이 있어야 한다.
+        for (final TeamVoteTemplate.Category category : template.categories()) {
+            if (!answeredCategoryIds.contains(category.id())) {
+                throw new VoteAnswerInvalidException(
+                        "부문 '%s' 의 팀을 1개 이상 선택해주세요.".formatted(category.title()));
+            }
         }
     }
 

@@ -212,7 +212,25 @@ class VoteAnswerValidatorTest {
     @Test
     @DisplayName("필수 피드백 질문에 응답하지 않으면 예외가 발생한다")
     void requiredFeedbackMissing_throws() {
-        final VoteSubmitRequest request = request(List.of(), List.of());
+        final VoteSubmitRequest request =
+                request(
+                        List.of(new TeamVoteCategoryAnswer("PLANNING", List.of(11L), "기획이 탄탄했어요")),
+                        List.of());
+
+        assertThatThrownBy(
+                        () ->
+                                validator.validate(
+                                        voteWithTemplates(), OWN_TEAM_ID, VALID_TEAM_IDS, request))
+                .isInstanceOf(VoteAnswerInvalidException.class);
+    }
+
+    @Test
+    @DisplayName("팀 투표 부문에 팀을 선택하지 않으면 예외가 발생한다")
+    void teamCategoryNotSelected_throws() {
+        final VoteSubmitRequest request =
+                request(
+                        List.of(),
+                        List.of(new FeedbackQuestionAnswer("BEST", List.of("OT"), null, null)));
 
         assertThatThrownBy(
                         () ->

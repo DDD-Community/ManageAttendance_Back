@@ -5,12 +5,19 @@ import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
+import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackTemplateResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.MyVoteStatusResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateRequest;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteNonRespondersResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
+import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
+import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +52,9 @@ public class VoteFacade {
     @Transactional
     public void submit(final Long userId, final Long voteId, final VoteSubmitRequest request) {
         final User user = userService.getUser(userId);
+        if (user.isManager()) {
+            throw new VoteManagerNotAllowedException();
+        }
         final Vote vote = voteService.getVote(voteId);
         vote.validateOpen();
 
@@ -92,5 +102,64 @@ public class VoteFacade {
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
         vote.close(timeProvider.nowDateTime());
+    }
+
+    /** [멤버] 내 기수의 진행 중(OPEN) 투표 + 내 참여 여부. 진행 중 투표가 없으면 404. */
+    @Transactional(readOnly = true)
+    public ActiveVoteResponse getActiveVote(final Long userId) {
+        final User user = userService.getUser(userId);
+        final Vote vote =
+                voteService
+                        .findOpenVote(user.getGenerationId())
+                        .orElseThrow(VoteNoActiveException::new);
+        return ActiveVoteResponse.of(vote, voteService.hasResponded(vote.getId(), userId));
+    }
+
+    /** [멤버] 특정 투표에 내가 이미 참여했는지 조회. 완료/재참여 차단 화면 판단에 사용한다. */
+    @Transactional(readOnly = true)
+    public MyVoteStatusResponse getMyVoteStatus(final Long userId, final Long voteId) {
+        userService.getUser(userId);
+        voteService.getVote(voteId);
+        return MyVoteStatusResponse.of(voteId, voteService.hasResponded(voteId, userId));
+    }
+
+    /** [운영진] 투표 상태 + 참여 현황(대상/참여/참여율). 운영진은 운영진 본인을 제외한 멤버를 모집단으로 본다. */
+    @Transactional(readOnly = true)
+    public VoteParticipationResponse getParticipation(final Long userId, final Long voteId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        final Vote vote = voteService.getVote(voteId);
+
+        final List<User> members = userService.findMembersByGeneration(vote.getGenerationId());
+        final Set<Long> respondedIds = voteService.findRespondedMemberIds(voteId);
+        final int respondedMembers =
+                (int) members.stream().filter(m -> respondedIds.contains(m.getId())).count();
+        return VoteParticipationResponse.of(vote, members.size(), respondedMembers);
+    }
+
+    /** [운영진] 미참여 멤버 명단(이름 + 소속 팀명). */
+    @Transactional(readOnly = true)
+    public VoteNonRespondersResponse getNonResponders(final Long userId, final Long voteId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        final Vote vote = voteService.getVote(voteId);
+
+        final List<User> members = userService.findMembersByGeneration(vote.getGenerationId());
+        final Set<Long> respondedIds = voteService.findRespondedMemberIds(voteId);
+        final Map<Long, String> teamNameById =
+                teamService.findAllByGenerationId(vote.getGenerationId()).stream()
+                        .collect(Collectors.toMap(Team::getId, Team::getName));
+
+        final List<VoteNonRespondersResponse.NonResponder> nonResponders =
+                members.stream()
+                        .filter(m -> !respondedIds.contains(m.getId()))
+                        .map(
+                                m ->
+                                        new VoteNonRespondersResponse.NonResponder(
+                                                m.getId(),
+                                                m.getName(),
+                                                teamNameById.get(m.getTeamId())))
+                        .toList();
+        return VoteNonRespondersResponse.of(nonResponders);
     }
 }

@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "SELECT u FROM User u WHERE u.teamId = :teamId AND u.id <> :excludeUserId AND u.role <> :userRole")
     List<User> findUsersByTeamIdAndExcludeUserId(
             Long teamId, Long excludeUserId, UserRole userRole);
+
+    List<User> findAllByGenerationIdAndRole(Long generationId, UserRole role);
 }
