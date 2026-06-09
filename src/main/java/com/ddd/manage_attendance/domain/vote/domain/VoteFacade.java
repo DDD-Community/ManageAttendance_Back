@@ -14,9 +14,10 @@ import com.ddd.manage_attendance.domain.vote.api.dto.VoteNonRespondersResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
+import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
+import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,9 @@ public class VoteFacade {
     @Transactional
     public void submit(final Long userId, final Long voteId, final VoteSubmitRequest request) {
         final User user = userService.getUser(userId);
+        if (user.isManager()) {
+            throw new VoteManagerNotAllowedException();
+        }
         final Vote vote = voteService.getVote(voteId);
         vote.validateOpen();
 
@@ -100,17 +104,15 @@ public class VoteFacade {
         vote.close(timeProvider.nowDateTime());
     }
 
-    /** [멤버] 내 기수의 진행 중(OPEN) 투표 + 내 참여 여부. 홈 메뉴에 '투표' 노출/진입 판단에 사용한다. */
+    /** [멤버] 내 기수의 진행 중(OPEN) 투표 + 내 참여 여부. 진행 중 투표가 없으면 404. */
     @Transactional(readOnly = true)
     public ActiveVoteResponse getActiveVote(final Long userId) {
         final User user = userService.getUser(userId);
-        final Optional<Vote> activeVote = voteService.findOpenVote(user.getGenerationId());
-        return activeVote
-                .map(
-                        vote ->
-                                ActiveVoteResponse.of(
-                                        vote, voteService.hasResponded(vote.getId(), userId)))
-                .orElseGet(ActiveVoteResponse::none);
+        final Vote vote =
+                voteService
+                        .findOpenVote(user.getGenerationId())
+                        .orElseThrow(VoteNoActiveException::new);
+        return ActiveVoteResponse.of(vote, voteService.hasResponded(vote.getId(), userId));
     }
 
     /** [멤버] 특정 투표에 내가 이미 참여했는지 조회. 완료/재참여 차단 화면 판단에 사용한다. */

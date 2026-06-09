@@ -46,3 +46,8 @@ out/
 ### Private Keys ###
 *.p8
 **/keys/*.p8
+
+### 로컬 Postman 테스트 전용 (커밋 금지) ###
+src/main/resources/application-local.yml
+src/main/resources/seed/
+docs/local-test/

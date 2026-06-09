@@ -2,8 +2,6 @@ package com.ddd.manage_attendance.core.exception;
 
 import com.ddd.manage_attendance.domain.oauth.exception.OAuthTokenValidationException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -28,7 +26,7 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), e.getMessage(), getStackTrace(e)));
+                .body(ErrorResponse.of(errorCode.name(), e.getMessage()));
     }
 
     @ExceptionHandler(BaseException.class)
@@ -42,7 +40,7 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), e.getMessage(), getStackTrace(e)));
+                .body(ErrorResponse.of(errorCode.name(), e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,7 +51,7 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = ErrorCode.VALIDATION_ERROR;
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), message, getStackTrace(e)));
+                .body(ErrorResponse.of(errorCode.name(), message));
     }
 
     @ExceptionHandler(BindException.class)
@@ -64,7 +62,7 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = ErrorCode.BIND_ERROR;
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), message, getStackTrace(e)));
+                .body(ErrorResponse.of(errorCode.name(), message));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -74,7 +72,7 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), errorCode.getMessage(), getStackTrace(e)));
+                .body(ErrorResponse.of(errorCode.name(), errorCode.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -87,13 +85,6 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getHttpStatus())
-                .body(ErrorResponse.of(errorCode.name(), errorCode.getMessage(), getStackTrace(e)));
-    }
-
-    private String getStackTrace(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return sw.toString();
+                .body(ErrorResponse.of(errorCode.name(), errorCode.getMessage()));
     }
 }
