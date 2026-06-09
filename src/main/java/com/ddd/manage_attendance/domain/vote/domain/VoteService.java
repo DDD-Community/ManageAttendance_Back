@@ -9,6 +9,9 @@ import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyRespondedExcep
 import com.ddd.manage_attendance.domain.vote.exception.VoteNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,27 @@ public class VoteService {
     @Transactional(readOnly = true)
     public Vote getVote(final Long voteId) {
         return voteRepository.findById(voteId).orElseThrow(VoteNotFoundException::new);
+    }
+
+    /** 기수의 진행 중(OPEN) 투표. 멤버 메뉴 노출/진입 판단에 사용한다. */
+    @Transactional(readOnly = true)
+    public Optional<Vote> findOpenVote(final Long generationId) {
+        return voteRepository.findFirstByGenerationIdAndStatusOrderByIdDesc(
+                generationId, VoteStatus.OPEN);
+    }
+
+    /** 멤버가 해당 투표에 이미 응답했는지 여부. */
+    @Transactional(readOnly = true)
+    public boolean hasResponded(final Long voteId, final Long memberId) {
+        return voteResponseRepository.existsByVoteIdAndMemberId(voteId, memberId);
+    }
+
+    /** 해당 투표에 응답한 멤버 Id 집합. 참여 현황/미참여 명단 집계에 사용한다. */
+    @Transactional(readOnly = true)
+    public Set<Long> findRespondedMemberIds(final Long voteId) {
+        return voteResponseRepository.findAllByVoteId(voteId).stream()
+                .map(VoteResponse::getMemberId)
+                .collect(Collectors.toSet());
     }
 
     @Transactional

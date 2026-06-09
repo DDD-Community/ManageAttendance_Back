@@ -35,6 +35,12 @@ public class UserService {
         return userRepository.findUsersByTeamIdAndExcludeUserId(teamId, excludeUserId, userRole);
     }
 
+    /** 기수에 속한 일반 멤버(운영진 제외) 목록. 투표 참여 현황/미참여 명단의 모집단으로 사용한다. */
+    @Transactional(readOnly = true)
+    public List<User> findMembersByGeneration(final Long generationId) {
+        return userRepository.findAllByGenerationIdAndRole(generationId, UserRole.MEMBER);
+    }
+
     @Transactional
     public User registerOAuthUser(
             final OAuthProvider provider,
