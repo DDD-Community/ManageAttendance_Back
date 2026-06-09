@@ -7,10 +7,11 @@ import java.util.stream.Collectors;
 
 public record TeamResponse(
         @Schema(description = "팀 Id", example = "1") Long teamId,
-        @Schema(description = "팀 이름", example = "web1팀") String name) {
+        @Schema(description = "팀 이름", example = "web1팀") String name,
+        @Schema(description = "서비스명", example = "디톡스메이트") String serviceName) {
 
     public static TeamResponse from(final Team team) {
-        return new TeamResponse(team.getId(), team.getName());
+        return new TeamResponse(team.getId(), team.getName(), team.getServiceName());
     }
 
     public static List<TeamResponse> fromList(final List<Team> teams) {

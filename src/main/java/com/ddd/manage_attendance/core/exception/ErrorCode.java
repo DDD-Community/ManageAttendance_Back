@@ -29,6 +29,15 @@ public enum ErrorCode {
     // 팀 관련
     TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 팀입니다."),
 
+    // 투표 관련
+    VOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 투표입니다."),
+    VOTE_NOT_DRAFT(HttpStatus.BAD_REQUEST, "작성중(DRAFT) 상태에서만 수정할 수 있습니다."),
+    VOTE_NOT_OPEN(HttpStatus.BAD_REQUEST, "진행중(OPEN)인 투표가 아닙니다."),
+    VOTE_INVALID_STATUS(HttpStatus.BAD_REQUEST, "현재 투표 상태에서는 수행할 수 없는 작업입니다."),
+    VOTE_OWN_TEAM_SELECTED(HttpStatus.BAD_REQUEST, "본인 팀은 투표할 수 없습니다."),
+    VOTE_ANSWER_INVALID(HttpStatus.BAD_REQUEST, "투표 응답이 제약 조건을 위반했습니다."),
+    VOTE_ALREADY_RESPONDED(HttpStatus.BAD_REQUEST, "이미 투표에 참여했습니다."),
+
     // 데이터 관련
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 데이터입니다."),
 
