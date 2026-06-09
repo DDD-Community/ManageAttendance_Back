@@ -41,13 +41,30 @@ public class Team extends BaseEntity {
     @Column(name = "generation_id", columnDefinition = "bigint")
     private Long generationId;
 
+    @Comment("서비스명 (팀이 만든 서비스 이름, 투표 화면 표기용)")
+    @Column(name = "service_name", nullable = true, columnDefinition = "varchar(100)")
+    private String serviceName;
+
     @Builder(access = AccessLevel.PRIVATE)
-    public Team(String name, Long generationId) {
+    public Team(String name, Long generationId, String serviceName) {
         this.name = name;
         this.generationId = generationId;
+        this.serviceName = serviceName;
     }
 
     public static Team createTeam(String name, Long generationId) {
-        return Team.builder().name(name).generationId(generationId).build();
+        return createTeam(name, generationId, null);
+    }
+
+    public static Team createTeam(String name, Long generationId, String serviceName) {
+        return Team.builder()
+                .name(name)
+                .generationId(generationId)
+                .serviceName(serviceName)
+                .build();
+    }
+
+    public void updateServiceName(final String serviceName) {
+        this.serviceName = serviceName;
     }
 }

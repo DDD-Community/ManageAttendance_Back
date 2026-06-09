@@ -5,15 +5,29 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Configuration
 @EnableJpaAuditing
 class JpaConfig {
 
+    // 인증 컨텍스트가 없는 경우(OAuth 가입 등 시스템 작업)에 사용하는 감사자 ID
+    private static final Long SYSTEM_AUDITOR = 0L;
+
     @Bean
     public AuditorAware<Long> auditorProvider() {
-        // OAuth 로그인 시 시스템 사용자 ID를 반환
-        // TODO: 실제 인증된 사용자 ID를 반환하도록 수정 필요
-        return () -> Optional.of(0L);
+        return () -> {
+            final Authentication authentication =
+                    SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Optional.of(SYSTEM_AUDITOR);
+            }
+            // JwtAuthenticationFilter 가 principal 로 Long userId 를 설정한다.
+            if (authentication.getPrincipal() instanceof Long userId) {
+                return Optional.of(userId);
+            }
+            return Optional.of(SYSTEM_AUDITOR);
+        };
     }
 }
