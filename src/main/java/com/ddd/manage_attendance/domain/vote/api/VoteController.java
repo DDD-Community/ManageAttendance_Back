@@ -1,19 +1,24 @@
 package com.ddd.manage_attendance.domain.vote.api;
 
 import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackResultResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.MyVoteStatusResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteResultResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteDetailResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteNonRespondersResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteSummaryResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
 import com.ddd.manage_attendance.domain.vote.domain.VoteFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +50,25 @@ public class VoteController {
             @RequestBody final VoteCreateRequest request) {
         final Long voteId = voteFacade.createVote(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(VoteCreateResponse.from(voteId));
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "[운영진] 투표 목록 조회",
+            description = "본인 기수의 전체 투표를 최신순으로 조회합니다.\n\n- 운영진 권한 필수")
+    @SecurityRequirement(name = "JWT")
+    public List<VoteSummaryResponse> getVotes(@AuthenticationPrincipal final Long userId) {
+        return voteFacade.getVotesForManager(userId);
+    }
+
+    @GetMapping("/{voteId}")
+    @Operation(
+            summary = "[운영진] 투표 상세 조회",
+            description = "투표 상태와 팀 투표/피드백 템플릿을 함께 조회합니다(편집 재개용).\n\n- 운영진 권한 필수")
+    @SecurityRequirement(name = "JWT")
+    public VoteDetailResponse getVoteDetail(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getVoteDetail(userId, voteId);
     }
 
     @PutMapping("/{voteId}/template")
@@ -95,6 +119,32 @@ public class VoteController {
     public FeedbackTemplateResponse getFeedbackTemplate(
             @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
         return voteFacade.getFeedbackTemplate(userId, voteId);
+    }
+
+    @GetMapping("/{voteId}/team-vote/results")
+    @Operation(
+            summary = "[운영진] 팀 투표 결과 집계 조회",
+            description =
+                    "부문별 팀 득표 순위와 작성된 사유 목록을 조회합니다.\n\n"
+                            + "- 운영진 권한 필수\n"
+                            + "- OPEN/CLOSED 모두 실시간 집계(DRAFT 는 빈 결과)")
+    @SecurityRequirement(name = "JWT")
+    public TeamVoteResultResponse getTeamVoteResults(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getTeamVoteResults(userId, voteId);
+    }
+
+    @GetMapping("/{voteId}/feedback/results")
+    @Operation(
+            summary = "[운영진] 참여 경험 피드백 결과 집계 조회",
+            description =
+                    "질문별 응답 분포(선택지/예·아니오)와 작성 텍스트(익명)를 조회합니다.\n\n"
+                            + "- 운영진 권한 필수\n"
+                            + "- followUp 후속 질문도 함께 집계")
+    @SecurityRequirement(name = "JWT")
+    public FeedbackResultResponse getFeedbackResults(
+            @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
+        return voteFacade.getFeedbackResults(userId, voteId);
     }
 
     @PostMapping("/{voteId}/responses")
