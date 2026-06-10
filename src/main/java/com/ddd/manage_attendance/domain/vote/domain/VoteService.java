@@ -54,6 +54,48 @@ public class VoteService {
                 .collect(Collectors.toSet());
     }
 
+    /** 한 기수의 전체 투표(최신순). 운영진 투표 목록에 사용한다. */
+    @Transactional(readOnly = true)
+    public List<Vote> findVotesByGeneration(final Long generationId) {
+        return voteRepository.findAllByGenerationIdOrderByIdDesc(generationId);
+    }
+
+    /** 해당 투표의 총 응답자 수. 결과 집계의 분모로 사용한다. */
+    @Transactional(readOnly = true)
+    public long countResponses(final Long voteId) {
+        return voteResponseRepository.countByVoteId(voteId);
+    }
+
+    /** 부문별 팀 득표 집계. */
+    @Transactional(readOnly = true)
+    public List<TeamVoteTally> tallyTeamVotes(final Long voteId) {
+        return teamVoteAnswerRepository.tallyByVoteId(voteId);
+    }
+
+    /** 부문별 작성 사유 목록(익명). */
+    @Transactional(readOnly = true)
+    public List<TeamReasonView> findTeamVoteReasons(final Long voteId) {
+        return teamVoteReasonRepository.findReasonsByVoteId(voteId);
+    }
+
+    /** 피드백 MULTI_SELECT 선택지별 응답 수 집계. */
+    @Transactional(readOnly = true)
+    public List<FeedbackOptionTally> tallyFeedbackOptions(final Long voteId) {
+        return feedbackAnswerRepository.tallyOptionsByVoteId(voteId);
+    }
+
+    /** 피드백 BOOLEAN 예/아니오 응답 수 집계. */
+    @Transactional(readOnly = true)
+    public List<FeedbackBoolTally> tallyFeedbackBooleans(final Long voteId) {
+        return feedbackAnswerRepository.tallyBoolByVoteId(voteId);
+    }
+
+    /** 피드백 LONG_TEXT 작성 응답 목록(익명). */
+    @Transactional(readOnly = true)
+    public List<FeedbackTextView> findFeedbackTexts(final Long voteId) {
+        return feedbackAnswerRepository.findTextsByVoteId(voteId);
+    }
+
     @Transactional
     public Vote createDraft(
             final Long generationId,

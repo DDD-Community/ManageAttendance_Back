@@ -6,14 +6,19 @@ import com.ddd.manage_attendance.domain.auth.domain.UserService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackResultResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.FeedbackTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.MyVoteStatusResponse;
+import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteResultResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.TeamVoteTemplateResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteCreateRequest;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteDetailResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteNonRespondersResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
+import com.ddd.manage_attendance.domain.vote.api.dto.VoteSummaryResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
+import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyOpenException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
 import java.util.List;
@@ -93,6 +98,14 @@ public class VoteFacade {
         final User manager = userService.getUser(userId);
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
+        // 기수당 OPEN 투표는 하나라는 전제를 보장한다(/active 단일성).
+        // 앱 레벨 가드: 운영진 수동·저빈도 작업이며, MySQL 은 조건부 유니크 인덱스를 지원하지 않아 DB 제약 대신 여기서 막는다.
+        voteService
+                .findOpenVote(vote.getGenerationId())
+                .ifPresent(
+                        open -> {
+                            throw new VoteAlreadyOpenException();
+                        });
         vote.open(timeProvider.nowDateTime());
     }
 
@@ -161,5 +174,51 @@ public class VoteFacade {
                                                 teamNameById.get(m.getTeamId())))
                         .toList();
         return VoteNonRespondersResponse.of(nonResponders);
+    }
+
+    /** [운영진] 팀 투표 결과 집계(부문별 팀 득표 + 작성 사유). 집계 행을 템플릿 부문 메타·팀 정보와 머지한다. */
+    @Transactional(readOnly = true)
+    public TeamVoteResultResponse getTeamVoteResults(final Long userId, final Long voteId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        final Vote vote = voteService.getVote(voteId);
+        final List<Team> teams = teamService.findAllByGenerationId(vote.getGenerationId());
+        return TeamVoteResultResponse.of(
+                vote,
+                teams,
+                voteService.tallyTeamVotes(voteId),
+                voteService.findTeamVoteReasons(voteId),
+                voteService.countResponses(voteId));
+    }
+
+    /** [운영진] 참여 경험 피드백 결과 집계(질문 타입별 분포/텍스트). */
+    @Transactional(readOnly = true)
+    public FeedbackResultResponse getFeedbackResults(final Long userId, final Long voteId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        final Vote vote = voteService.getVote(voteId);
+        return FeedbackResultResponse.of(
+                vote,
+                voteService.tallyFeedbackOptions(voteId),
+                voteService.tallyFeedbackBooleans(voteId),
+                voteService.findFeedbackTexts(voteId),
+                voteService.countResponses(voteId));
+    }
+
+    /** [운영진] 본인 기수의 투표 목록(최신순). */
+    @Transactional(readOnly = true)
+    public List<VoteSummaryResponse> getVotesForManager(final Long userId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        return VoteSummaryResponse.fromList(
+                voteService.findVotesByGeneration(manager.getGenerationId()));
+    }
+
+    /** [운영진] 투표 상세(상태 + 양쪽 템플릿). 편집 재개 화면에 사용한다. */
+    @Transactional(readOnly = true)
+    public VoteDetailResponse getVoteDetail(final Long userId, final Long voteId) {
+        final User manager = userService.getUser(userId);
+        manager.validateManager();
+        return VoteDetailResponse.from(voteService.getVote(voteId));
     }
 }

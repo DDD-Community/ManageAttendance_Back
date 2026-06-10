@@ -39,6 +39,7 @@ public enum ErrorCode {
     VOTE_ALREADY_RESPONDED(HttpStatus.BAD_REQUEST, "이미 투표에 참여했습니다."),
     VOTE_NO_ACTIVE(HttpStatus.NOT_FOUND, "진행 중인 투표가 없습니다."),
     VOTE_MANAGER_NOT_ALLOWED(HttpStatus.FORBIDDEN, "운영진은 투표에 참여할 수 없습니다."),
+    VOTE_ALREADY_OPEN(HttpStatus.CONFLICT, "이미 진행 중인 투표가 있습니다."),
 
     // 데이터 관련
     DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 데이터입니다."),
