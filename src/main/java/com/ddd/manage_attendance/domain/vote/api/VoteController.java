@@ -174,7 +174,7 @@ public class VoteController {
             description =
                     "내 기수에 진행 중(OPEN)인 투표가 있는지 조회합니다.\n\n"
                             + "- 홈 메뉴의 '투표(NEW)' 노출/진입 판단에 사용\n"
-                            + "- 없으면 hasActiveVote=false\n"
+                            + "- 진행 중 투표가 없으면 404 VOTE_NO_ACTIVE\n"
                             + "- alreadyResponded 로 완료 화면 분기")
     @SecurityRequirement(name = "JWT")
     public ActiveVoteResponse getActiveVote(@AuthenticationPrincipal final Long userId) {
