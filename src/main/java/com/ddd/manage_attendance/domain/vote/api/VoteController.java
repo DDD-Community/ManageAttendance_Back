@@ -86,7 +86,11 @@ public class VoteController {
     @PatchMapping("/{voteId}/open")
     @Operation(
             summary = "[운영진] 투표 시작",
-            description = "투표를 OPEN 상태로 전환합니다(템플릿 freeze).\n\n- 운영진 권한 필수\n- DRAFT 상태에서만 가능")
+            description =
+                    "투표를 OPEN 상태로 전환합니다(템플릿 freeze).\n\n"
+                            + "- 운영진 권한 필수\n"
+                            + "- DRAFT 상태에서만 가능\n"
+                            + "- 같은 기수에 진행 중(OPEN)인 투표가 있으면 400 VOTE_ALREADY_OPEN")
     @SecurityRequirement(name = "JWT")
     public void openVote(
             @AuthenticationPrincipal final Long userId, @PathVariable final Long voteId) {
