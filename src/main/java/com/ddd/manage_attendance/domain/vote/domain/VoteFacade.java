@@ -1,8 +1,13 @@
 package com.ddd.manage_attendance.domain.vote.domain;
 
 import com.ddd.manage_attendance.core.util.TimeProvider;
+import com.ddd.manage_attendance.domain.attendance.domain.Attendance;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceStatus;
 import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
+import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
+import com.ddd.manage_attendance.domain.schedule.domain.ScheduleService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
@@ -36,7 +41,11 @@ public class VoteFacade {
     private final VoteService voteService;
     private final UserService userService;
     private final TeamService teamService;
+    private final GenerationService generationService;
+    private final ScheduleService scheduleService;
+    private final AttendanceService attendanceService;
     private final VoteAnswerValidator voteAnswerValidator;
+    private final VoteTemplateValidator voteTemplateValidator;
     private final TimeProvider timeProvider;
 
     @Transactional(readOnly = true)
@@ -75,6 +84,8 @@ public class VoteFacade {
     public Long createVote(final Long userId, final VoteCreateRequest request) {
         final User manager = userService.getUser(userId);
         manager.validateManager();
+        generationService.findById(request.generationId()); // 존재하지 않는 기수면 404
+        voteTemplateValidator.validate(request.teamVoteTemplate(), request.feedbackTemplate());
         final Vote vote =
                 voteService.createDraft(
                         request.generationId(),
@@ -89,6 +100,7 @@ public class VoteFacade {
             final Long userId, final Long voteId, final VoteTemplateUpdateRequest request) {
         final User manager = userService.getUser(userId);
         manager.validateManager();
+        voteTemplateValidator.validate(request.teamVoteTemplate(), request.feedbackTemplate());
         final Vote vote = voteService.getVote(voteId);
         vote.updateTemplates(request.teamVoteTemplate(), request.feedbackTemplate());
     }
@@ -163,17 +175,44 @@ public class VoteFacade {
                 teamService.findAllByGenerationId(vote.getGenerationId()).stream()
                         .collect(Collectors.toMap(Team::getId, Team::getName));
 
+        final List<User> nonResponderUsers =
+                members.stream().filter(m -> !respondedIds.contains(m.getId())).toList();
+        final Map<Long, AttendanceStatus> todayStatusByMember =
+                resolveTodayAttendance(vote.getGenerationId(), nonResponderUsers);
+
         final List<VoteNonRespondersResponse.NonResponder> nonResponders =
-                members.stream()
-                        .filter(m -> !respondedIds.contains(m.getId()))
+                nonResponderUsers.stream()
                         .map(
                                 m ->
                                         new VoteNonRespondersResponse.NonResponder(
                                                 m.getId(),
                                                 m.getName(),
-                                                teamNameById.get(m.getTeamId())))
+                                                teamNameById.get(m.getTeamId()),
+                                                todayStatusByMember.getOrDefault(
+                                                        m.getId(), AttendanceStatus.NONE)))
                         .toList();
         return VoteNonRespondersResponse.of(nonResponders);
+    }
+
+    /** 금일 일정이 있으면 대상 멤버들의 금일 출석 상태를 매핑한다. 일정이 없으면 빈 맵(→ 호출부에서 NONE 처리). */
+    private Map<Long, AttendanceStatus> resolveTodayAttendance(
+            final Long generationId, final List<User> users) {
+        if (users.isEmpty()) {
+            return Map.of();
+        }
+        return scheduleService
+                .findScheduleByDateAndGenerationId(timeProvider.nowDate(), generationId)
+                .map(
+                        schedule -> {
+                            final List<Long> userIds = users.stream().map(User::getId).toList();
+                            return attendanceService
+                                    .findAllUsersAttendancesByScheduleId(userIds, schedule.getId())
+                                    .stream()
+                                    .collect(
+                                            Collectors.toMap(
+                                                    Attendance::getUserId, Attendance::getStatus));
+                        })
+                .orElseGet(Map::of);
     }
 
     /** [운영진] 팀 투표 결과 집계(부문별 팀 득표 + 작성 사유). 집계 행을 템플릿 부문 메타·팀 정보와 머지한다. */
