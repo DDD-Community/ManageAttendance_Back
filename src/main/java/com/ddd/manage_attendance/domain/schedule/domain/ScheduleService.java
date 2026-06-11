@@ -3,6 +3,7 @@ package com.ddd.manage_attendance.domain.schedule.domain;
 import com.ddd.manage_attendance.domain.schedule.api.dto.ScheduleResponse;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,13 @@ public class ScheduleService {
         return scheduleRepository
                 .findByDateAndGenerationId(date, generationId)
                 .orElseThrow(NoScheduleException::new);
+    }
+
+    /** 해당 날짜의 일정을 조회한다(없을 수 있음). 일정이 없는 날을 정상 흐름으로 다룰 때 사용한다. */
+    @Transactional(readOnly = true)
+    public Optional<Schedule> findScheduleByDateAndGenerationId(
+            final LocalDate date, final Long generationId) {
+        return scheduleRepository.findByDateAndGenerationId(date, generationId);
     }
 
     @Transactional(readOnly = true)

@@ -9,8 +9,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.ddd.manage_attendance.core.util.TimeProvider;
+import com.ddd.manage_attendance.domain.attendance.domain.AttendanceService;
 import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserService;
+import com.ddd.manage_attendance.domain.generation.domain.GenerationService;
+import com.ddd.manage_attendance.domain.schedule.domain.ScheduleService;
 import com.ddd.manage_attendance.domain.team.domain.Team;
 import com.ddd.manage_attendance.domain.team.domain.TeamService;
 import com.ddd.manage_attendance.domain.vote.api.dto.ActiveVoteResponse;
@@ -37,7 +40,11 @@ class VoteFacadeTest {
     @Mock private VoteService voteService;
     @Mock private UserService userService;
     @Mock private TeamService teamService;
+    @Mock private GenerationService generationService;
+    @Mock private ScheduleService scheduleService;
+    @Mock private AttendanceService attendanceService;
     @Mock private VoteAnswerValidator voteAnswerValidator;
+    @Mock private VoteTemplateValidator voteTemplateValidator;
     @Mock private TimeProvider timeProvider;
     @InjectMocks private VoteFacade voteFacade;
 

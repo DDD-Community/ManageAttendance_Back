@@ -18,6 +18,7 @@ import com.ddd.manage_attendance.domain.vote.domain.VoteFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,7 +48,7 @@ public class VoteController {
     @SecurityRequirement(name = "JWT")
     public ResponseEntity<VoteCreateResponse> createVote(
             @AuthenticationPrincipal final Long userId,
-            @RequestBody final VoteCreateRequest request) {
+            @Valid @RequestBody final VoteCreateRequest request) {
         final Long voteId = voteFacade.createVote(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(VoteCreateResponse.from(voteId));
     }
