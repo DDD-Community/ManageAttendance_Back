@@ -26,8 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByGenerationIdAndRole(Long generationId, UserRole role);
 
-    long countByTeamId(Long teamId);
-
     long countByTeamIdAndRole(Long teamId, UserRole role);
 
     long countByInvitationCodeAndGenerationId(String invitationCode, Long generationId);

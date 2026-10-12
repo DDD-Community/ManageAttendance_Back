@@ -23,19 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/internal/generations")
 @RequiredArgsConstructor
-@Tag(name = "내부 기수 API")
+@Tag(name = "내부 기수 API", description = "내부 시스템에서 기수를 조회하고 관리합니다.")
 @SecurityRequirement(name = "InternalApiKey")
 public class InternalGenerationController {
     private final InternalGenerationFacade facade;
 
     @GetMapping
-    @Operation(summary = "[내부] 기수 목록 조회")
+    @Operation(summary = "[내부] 기수 목록 조회", description = "등록된 기수와 회원 수를 조회합니다.")
     public List<InternalGenerationItem> list() {
         return facade.listGenerations();
     }
 
     @PostMapping
-    @Operation(summary = "[내부] 기수 생성")
+    @Operation(summary = "[내부] 기수 생성", description = "기수를 생성합니다. 이름이 중복되면 409를 반환합니다.")
     public ResponseEntity<InternalGenerationItem> create(
             @Valid @RequestBody final InternalGenerationCreateRequest request) {
         final InternalGenerationItem result = facade.createGeneration(request.name());
@@ -44,7 +44,7 @@ public class InternalGenerationController {
     }
 
     @DeleteMapping("/{generationId}")
-    @Operation(summary = "[내부] 기수 삭제")
+    @Operation(summary = "[내부] 기수 삭제", description = "기수를 삭제합니다. 기수가 없으면 404, 참조 중이면 409를 반환합니다.")
     public ResponseEntity<Void> delete(@PathVariable @Positive final Long generationId) {
         facade.deleteGeneration(generationId);
         return ResponseEntity.noContent().build();

@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/internal/generations")
 @RequiredArgsConstructor
-@Tag(name = "내부 출석 API")
+@Tag(name = "내부 출석 API", description = "내부 시스템에서 기수별 출석 보드를 조회합니다.")
 @SecurityRequirement(name = "InternalApiKey")
 public class InternalAttendanceController {
     private final InternalAttendanceBoardFacade facade;
 
     @GetMapping("/{generationId}/attendance-board")
-    @Operation(summary = "[내부] 기수별 출석 보드 조회")
+    @Operation(
+            summary = "[내부] 기수별 출석 보드 조회",
+            description = "회원과 일정별 출석 상태를 조회합니다. 기수가 없으면 404를 반환합니다.")
     public InternalAttendanceBoard board(@PathVariable @Positive final Long generationId) {
         return facade.attendanceBoard(generationId);
     }

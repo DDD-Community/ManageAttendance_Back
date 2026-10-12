@@ -28,8 +28,7 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
         this.configuredKey = configuredKey;
         this.objectMapper = objectMapper;
         if (configuredKey == null || configuredKey.isBlank() || configuredKey.length() < 32) {
-            log.warn(
-                    "Internal API authentication is disabled because its key is not configured securely.");
+            log.warn("내부 API 키가 없거나 32자 미만이라 내부 API 인증이 비활성화됩니다.");
         }
     }
 

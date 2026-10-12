@@ -7,6 +7,7 @@ import com.ddd.manage_attendance.domain.attendance.api.dto.InternalAttendanceCel
 import com.ddd.manage_attendance.domain.attendance.api.dto.InternalGenerationInfo;
 import com.ddd.manage_attendance.domain.attendance.api.dto.InternalMemberItem;
 import com.ddd.manage_attendance.domain.attendance.api.dto.InternalScheduleItem;
+import com.ddd.manage_attendance.domain.auth.domain.User;
 import com.ddd.manage_attendance.domain.auth.domain.UserRepository;
 import com.ddd.manage_attendance.domain.auth.domain.UserRole;
 import com.ddd.manage_attendance.domain.generation.domain.Generation;
@@ -40,38 +41,10 @@ public class InternalAttendanceBoardFacade {
         final Generation generation =
                 generations.findById(id).orElseThrow(DataNotFoundException::new);
         final List<Schedule> scheduleList = schedules.findAllByGenerationIdOrderByDateAsc(id);
-        final Map<Long, String> teamNames =
-                teams.findAllByGenerationId(id).stream()
-                        .collect(Collectors.toMap(Team::getId, Team::getName));
+        final Map<Long, String> teamNames = loadTeamNames(id);
         final List<InternalMemberItem> members =
-                users.findAllByGenerationIdAndRole(id, UserRole.MEMBER).stream()
-                        .map(
-                                user ->
-                                        new InternalMemberItem(
-                                                user.getId(),
-                                                user.getName(),
-                                                user.getTeamId(),
-                                                teamNames.get(user.getTeamId()),
-                                                user.getJob().name()))
-                        .sorted(
-                                Comparator.comparing(
-                                                InternalMemberItem::teamName,
-                                                Comparator.nullsLast(String::compareTo))
-                                        .thenComparing(
-                                                InternalMemberItem::name,
-                                                Comparator.nullsLast(String::compareTo))
-                                        .thenComparing(InternalMemberItem::id))
-                        .toList();
-        final List<InternalScheduleItem> scheduleItems =
-                scheduleList.stream()
-                        .map(
-                                schedule ->
-                                        new InternalScheduleItem(
-                                                schedule.getId(),
-                                                schedule.getName(),
-                                                schedule.getDate(),
-                                                schedule.getScheduleTime()))
-                        .toList();
+                toMemberItems(users.findAllByGenerationIdAndRole(id, UserRole.MEMBER), teamNames);
+        final List<InternalScheduleItem> scheduleItems = toScheduleItems(scheduleList);
         final Map<String, AttendanceStatus> statuses = loadStatuses(scheduleList);
         final LocalDate today = timeProvider.nowDate();
         final List<InternalAttendanceCell> cells =
@@ -82,6 +55,45 @@ public class InternalAttendanceBoardFacade {
                 scheduleItems,
                 members,
                 cells);
+    }
+
+    private Map<Long, String> loadTeamNames(final Long generationId) {
+        return teams.findAllByGenerationId(generationId).stream()
+                .collect(Collectors.toMap(Team::getId, Team::getName));
+    }
+
+    private List<InternalMemberItem> toMemberItems(
+            final List<User> memberUsers, final Map<Long, String> teamNames) {
+        return memberUsers.stream()
+                .map(
+                        user ->
+                                new InternalMemberItem(
+                                        user.getId(),
+                                        user.getName(),
+                                        user.getTeamId(),
+                                        teamNames.get(user.getTeamId()),
+                                        user.getJob().name()))
+                .sorted(
+                        Comparator.comparing(
+                                        InternalMemberItem::teamName,
+                                        Comparator.nullsLast(String::compareTo))
+                                .thenComparing(
+                                        InternalMemberItem::name,
+                                        Comparator.nullsLast(String::compareTo))
+                                .thenComparing(InternalMemberItem::id))
+                .toList();
+    }
+
+    private List<InternalScheduleItem> toScheduleItems(final List<Schedule> scheduleList) {
+        return scheduleList.stream()
+                .map(
+                        schedule ->
+                                new InternalScheduleItem(
+                                        schedule.getId(),
+                                        schedule.getName(),
+                                        schedule.getDate(),
+                                        schedule.getScheduleTime()))
+                .toList();
     }
 
     private Map<String, AttendanceStatus> loadStatuses(final List<Schedule> scheduleList) {
