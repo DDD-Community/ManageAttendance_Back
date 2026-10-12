@@ -19,4 +19,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Long teamId, Long excludeUserId, UserRole userRole);
 
     List<User> findAllByGenerationIdAndRole(Long generationId, UserRole role);
+
+    boolean existsByGenerationId(Long generationId);
+
+    boolean existsByTeamId(Long teamId);
+
+    long countByGenerationIdAndRole(Long generationId, UserRole role);
+
+    long countByTeamId(Long teamId);
+
+    long countByTeamIdAndRole(Long teamId, UserRole role);
+
+    long countByInvitationCodeAndGenerationId(String invitationCode, Long generationId);
 }

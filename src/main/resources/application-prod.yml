@@ -40,6 +40,9 @@ jwt:
   access-token-validity-in-seconds: 43200 # 12 hours
   refresh-token-validity-in-seconds: 1209600 # 14 days
 
+internal:
+  api-key: ${INTERNAL_API_KEY:}
+
 springdoc:
   swagger-ui:
     url: https://api.dddstudy.kr/v3/api-docs

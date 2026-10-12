@@ -52,6 +52,7 @@ jobs:
           script: |
             cat <<'EOF' | sudo tee /opt/attendance-api/.env > /dev/null
             JWT_SECRET=${{ secrets.JWT_SECRET }}
+            INTERNAL_API_KEY=${{ secrets.INTERNAL_API_KEY }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}

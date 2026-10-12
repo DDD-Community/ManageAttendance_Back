@@ -1,5 +1,6 @@
 package com.ddd.manage_attendance.core.config.swagger;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -23,6 +24,11 @@ import org.springframework.context.annotation.Configuration;
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT")
+@SecurityScheme(
+        name = "InternalApiKey",
+        type = SecuritySchemeType.APIKEY,
+        in = SecuritySchemeIn.HEADER,
+        paramName = "X-Internal-Api-Key")
 public class SwaggerConfig {
 
     @Bean
@@ -33,8 +39,7 @@ public class SwaggerConfig {
 
     @Bean
     public OpenApiCustomizer forceHttpsServerUrl() {
-        return openApi ->
-                openApi.setServers(List.of(new Server().url("https://api.dddstudy.kr")));
+        return openApi -> openApi.setServers(List.of(new Server().url("https://api.dddstudy.kr")));
     }
 
     @Bean

@@ -1,7 +1,10 @@
 package com.ddd.manage_attendance.core.config.security;
 
+import com.ddd.manage_attendance.core.auth.InternalApiKeyFilter;
 import com.ddd.manage_attendance.core.auth.JwtAuthenticationFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -33,15 +36,23 @@ public class SecurityConfig {
     };
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ObjectMapper objectMapper;
+
+    @Value("${internal.api-key:}")
+    private String internalApiKey;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        InternalApiKeyFilter internalApiKeyFilter =
+                new InternalApiKeyFilter(internalApiKey, objectMapper);
 
         http.csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화 (개발환경에서만)
                 .authorizeHttpRequests(
                         auth ->
                                 auth.requestMatchers(AUTH_WHITELIST)
                                         .permitAll()
+                                        .requestMatchers("/api/internal/**")
+                                        .hasAuthority("INTERNAL")
                                         .requestMatchers(SWAGGER_WHITELIST)
                                         .permitAll()
                                         .requestMatchers("/h2-console/**")
@@ -54,6 +65,7 @@ public class SecurityConfig {
                                         HeadersConfigurer.FrameOptionsConfig
                                                 ::sameOrigin) // H2 콘솔 위해 필요
                         )
+                .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -10,6 +10,7 @@ public enum ErrorCode {
     // 인증 관련
     AUTH_EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다. 다시 로그인해주세요."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    AUTH_INVALID_INTERNAL_KEY(HttpStatus.UNAUTHORIZED, "유효하지 않은 내부 API 키입니다."),
     AUTH_ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 회원 정보입니다"),
     AUTH_GENERATION_MISMATCH(HttpStatus.BAD_REQUEST, "초대 코드의 기수와 요청한 기수가 일치하지 않습니다."),
     AUTH_INVALID_INVITATION_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 초대 코드입니다."),
@@ -28,6 +29,12 @@ public enum ErrorCode {
 
     // 팀 관련
     TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 팀입니다."),
+    GENERATION_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 기수입니다."),
+    GENERATION_IN_USE(HttpStatus.CONFLICT, "참조 중인 기수는 삭제할 수 없습니다."),
+    TEAM_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 팀입니다."),
+    TEAM_IN_USE(HttpStatus.CONFLICT, "회원이 소속된 팀은 삭제할 수 없습니다."),
+    INVITATION_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 초대 코드입니다."),
+    INVITATION_CODE_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "초대 코드 생성에 실패했습니다."),
 
     // 투표 관련
     VOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 투표입니다."),
