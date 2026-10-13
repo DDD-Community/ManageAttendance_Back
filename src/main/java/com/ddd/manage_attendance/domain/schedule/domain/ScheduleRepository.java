@@ -12,4 +12,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             Long generationId, LocalDate date);
 
     Optional<Schedule> findByDateAndGenerationId(LocalDate today, Long generationId);
+
+    boolean existsByGenerationId(Long generationId);
 }
