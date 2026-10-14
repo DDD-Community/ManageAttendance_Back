@@ -51,6 +51,27 @@ public class Schedule extends BaseEntity {
     @Column(name = "generation_id", columnDefinition = "bigint")
     private Long generationId;
 
+    public static Schedule createSchedule(
+            String name,
+            String description,
+            LocalDate date,
+            LocalTime scheduleTime,
+            Long generationId) {
+        final Schedule schedule = new Schedule();
+        schedule.name = name;
+        schedule.description = description;
+        schedule.date = date;
+        schedule.scheduleTime = scheduleTime;
+        schedule.generationId = generationId;
+        return schedule;
+    }
+
+    public void update(String name, String description, LocalTime scheduleTime) {
+        this.name = name;
+        this.description = description;
+        this.scheduleTime = scheduleTime;
+    }
+
     public AttendanceStatus statusByDate() {
         final LocalDate today = LocalDate.now();
 

@@ -12,6 +12,10 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    boolean existsByScheduleId(Long scheduleId);
+
+    long countByScheduleId(Long scheduleId);
+
     Optional<Attendance> findByUserIdAndCreatedDateBetween(
             Long userId, LocalDateTime start, LocalDateTime end);
 
