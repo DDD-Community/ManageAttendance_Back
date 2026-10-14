@@ -26,6 +26,8 @@ public enum ErrorCode {
 
     // 스케줄 관련
     SCHEDULE_NOT_ATTENDANCE_DAY(HttpStatus.BAD_REQUEST, "출석일이 아닙니다."),
+    SCHEDULE_DUPLICATED_DATE(HttpStatus.BAD_REQUEST, "요청에 같은 일정 날짜가 중복되었습니다."),
+    SCHEDULE_DATE_CONFLICT(HttpStatus.CONFLICT, "일정 날짜가 다른 기수와 충돌했습니다."),
 
     // 팀 관련
     TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 팀입니다."),

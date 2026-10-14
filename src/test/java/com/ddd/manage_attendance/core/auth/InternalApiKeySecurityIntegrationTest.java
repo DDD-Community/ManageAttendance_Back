@@ -1,6 +1,7 @@
 package com.ddd.manage_attendance.core.auth;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -56,5 +58,16 @@ class InternalApiKeySecurityIntegrationTest {
 
         mockMvc.perform(get(URI).header("Authorization", "Bearer " + token))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("내부 API 키가 없으면 일정 동기화 PUT을 거부한다")
+    void scheduleSyncWithoutKey_returnsUnauthorized() throws Exception {
+        mockMvc.perform(
+                        put("/api/internal/generations/13/schedules")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"schedules\":[]}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_INVALID_INTERNAL_KEY"));
     }
 }
