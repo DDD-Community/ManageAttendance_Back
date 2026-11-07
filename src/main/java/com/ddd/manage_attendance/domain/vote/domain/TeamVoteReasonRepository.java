@@ -9,6 +9,8 @@ public interface TeamVoteReasonRepository extends JpaRepository<TeamVoteReason, 
 
     List<TeamVoteReason> findByResponseId(Long responseId);
 
+    List<TeamVoteReason> findAllByResponseIdInOrderByIdAsc(List<Long> responseIds);
+
     /** 부문별 작성 사유 목록(익명). 결과 화면에서 운영진이 사유를 검토하는 데 사용한다. */
     @Query(
             """

@@ -9,6 +9,8 @@ public interface TeamVoteAnswerRepository extends JpaRepository<TeamVoteAnswer, 
 
     List<TeamVoteAnswer> findByResponseId(Long responseId);
 
+    List<TeamVoteAnswer> findAllByResponseIdInOrderByIdAsc(List<Long> responseIds);
+
     /** 부문별 팀 득표 집계. response_id 로 {@link VoteResponse} 와 조인해 해당 투표의 응답만 센다. */
     @Query(
             """

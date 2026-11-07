@@ -9,6 +9,8 @@ public interface FeedbackAnswerRepository extends JpaRepository<FeedbackAnswer, 
 
     List<FeedbackAnswer> findByResponseId(Long responseId);
 
+    List<FeedbackAnswer> findAllByResponseIdInOrderByIdAsc(List<Long> responseIds);
+
     /** MULTI_SELECT 선택지별 응답 수 집계. */
     @Query(
             """

@@ -97,4 +97,31 @@ class VoteTest {
 
         assertThatThrownBy(vote::validateOpen).isInstanceOf(VoteNotOpenException.class);
     }
+
+    @Test
+    @DisplayName("DRAFT 제목과 템플릿 수정 시 버전이 증가한다")
+    void updateDraft_changesTitleAndBumpsVersion() {
+        final Vote vote = draftVote();
+        vote.updateDraft("새 제목", null, null);
+        assertThat(vote.getTitle()).isEqualTo("새 제목");
+        assertThat(vote.getTemplateVersion()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("OPEN 글자 수정은 버전을 유지한다")
+    void reviseText_keepsVersion() {
+        final Vote vote = draftVote();
+        vote.open(LocalDateTime.now());
+        vote.reviseText("새 제목", null, null);
+        assertThat(vote.getTitle()).isEqualTo("새 제목");
+        assertThat(vote.getTemplateVersion()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("DRAFT 만 삭제할 수 있다")
+    void validateDeletable_whenOpen_throws() {
+        final Vote vote = draftVote();
+        vote.open(LocalDateTime.now());
+        assertThatThrownBy(vote::validateDeletable).isInstanceOf(VoteNotDraftException.class);
+    }
 }

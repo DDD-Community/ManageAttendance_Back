@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -101,7 +103,7 @@ class VoteFacadeTest {
         final Vote draft = Vote.createDraft(GENERATION_ID, "새 투표", null, null);
         given(userService.getUser(USER_ID)).willReturn(manager);
         given(voteService.getVote(VOTE_ID)).willReturn(draft);
-        given(voteService.findOpenVote(GENERATION_ID)).willReturn(Optional.of(mock(Vote.class)));
+        willThrow(new VoteAlreadyOpenException()).given(voteService).open(any(), any());
 
         assertThatThrownBy(() -> voteFacade.openVote(USER_ID, VOTE_ID))
                 .isInstanceOf(VoteAlreadyOpenException.class);
@@ -116,8 +118,14 @@ class VoteFacadeTest {
         final LocalDateTime now = LocalDateTime.of(2026, 6, 10, 10, 0);
         given(userService.getUser(USER_ID)).willReturn(manager);
         given(voteService.getVote(VOTE_ID)).willReturn(draft);
-        given(voteService.findOpenVote(GENERATION_ID)).willReturn(Optional.empty());
         given(timeProvider.nowDateTime()).willReturn(now);
+        willAnswer(
+                        invocation -> {
+                            draft.open(invocation.getArgument(1));
+                            return null;
+                        })
+                .given(voteService)
+                .open(any(), any());
 
         voteFacade.openVote(USER_ID, VOTE_ID);
 
@@ -130,6 +138,7 @@ class VoteFacadeTest {
     void getParticipation_computesRateOverMembers() {
         final User manager = mock(User.class);
         final Vote vote = Vote.createDraft(GENERATION_ID, "투표", null, null);
+        ReflectionTestUtils.setField(vote, "id", VOTE_ID);
         final User m1 = mock(User.class);
         final User m2 = mock(User.class);
         final User m3 = mock(User.class);
@@ -153,6 +162,7 @@ class VoteFacadeTest {
     void getNonResponders_filtersAndMapsTeamName() {
         final User manager = mock(User.class);
         final Vote vote = Vote.createDraft(GENERATION_ID, "투표", null, null);
+        ReflectionTestUtils.setField(vote, "id", VOTE_ID);
         final User responded = mock(User.class);
         final User pendingWithTeam = mock(User.class);
         final User pendingNoTeam = mock(User.class);

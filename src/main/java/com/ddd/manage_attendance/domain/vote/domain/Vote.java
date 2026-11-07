@@ -112,10 +112,34 @@ public class Vote extends BaseEntity {
     /** 템플릿 수정. DRAFT 상태에서만 허용되며 버전을 증가시킨다. */
     public void updateTemplates(
             final TeamVoteTemplate teamVoteTemplate, final FeedbackTemplate feedbackTemplate) {
+        updateDraft(this.title, teamVoteTemplate, feedbackTemplate);
+    }
+
+    public void updateDraft(
+            final String title,
+            final TeamVoteTemplate teamVoteTemplate,
+            final FeedbackTemplate feedbackTemplate) {
         validateDraft();
+        this.title = title;
         this.teamVoteTemplate = teamVoteTemplate;
         this.feedbackTemplate = feedbackTemplate;
         this.templateVersion += 1;
+    }
+
+    public void reviseText(
+            final String title,
+            final TeamVoteTemplate teamVoteTemplate,
+            final FeedbackTemplate feedbackTemplate) {
+        validateOpen();
+        VoteTemplateStructure.assertTextOnlyChange(
+                this.teamVoteTemplate, teamVoteTemplate, this.feedbackTemplate, feedbackTemplate);
+        this.title = title;
+        this.teamVoteTemplate = teamVoteTemplate;
+        this.feedbackTemplate = feedbackTemplate;
+    }
+
+    public void validateDeletable() {
+        validateDraft();
     }
 
     /** 투표 시작. DRAFT → OPEN (템플릿 freeze). */
