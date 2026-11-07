@@ -23,7 +23,6 @@ import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSummaryResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
-import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyOpenException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
 import java.util.List;
@@ -45,7 +44,6 @@ public class VoteFacade {
     private final ScheduleService scheduleService;
     private final AttendanceService attendanceService;
     private final VoteAnswerValidator voteAnswerValidator;
-    private final VoteTemplateValidator voteTemplateValidator;
     private final TimeProvider timeProvider;
 
     @Transactional(readOnly = true)
@@ -85,7 +83,6 @@ public class VoteFacade {
         final User manager = userService.getUser(userId);
         manager.validateManager();
         generationService.findById(request.generationId()); // 존재하지 않는 기수면 404
-        voteTemplateValidator.validate(request.teamVoteTemplate(), request.feedbackTemplate());
         final Vote vote =
                 voteService.createDraft(
                         request.generationId(),
@@ -100,9 +97,9 @@ public class VoteFacade {
             final Long userId, final Long voteId, final VoteTemplateUpdateRequest request) {
         final User manager = userService.getUser(userId);
         manager.validateManager();
-        voteTemplateValidator.validate(request.teamVoteTemplate(), request.feedbackTemplate());
         final Vote vote = voteService.getVote(voteId);
-        vote.updateTemplates(request.teamVoteTemplate(), request.feedbackTemplate());
+        voteService.updateDraft(
+                vote, vote.getTitle(), request.teamVoteTemplate(), request.feedbackTemplate());
     }
 
     @Transactional
@@ -112,13 +109,7 @@ public class VoteFacade {
         final Vote vote = voteService.getVote(voteId);
         // 기수당 OPEN 투표는 하나라는 전제를 보장한다(/active 단일성).
         // 앱 레벨 가드: 운영진 수동·저빈도 작업이며, MySQL 은 조건부 유니크 인덱스를 지원하지 않아 DB 제약 대신 여기서 막는다.
-        voteService
-                .findOpenVote(vote.getGenerationId())
-                .ifPresent(
-                        open -> {
-                            throw new VoteAlreadyOpenException();
-                        });
-        vote.open(timeProvider.nowDateTime());
+        voteService.open(vote, timeProvider.nowDateTime());
     }
 
     @Transactional
@@ -126,7 +117,7 @@ public class VoteFacade {
         final User manager = userService.getUser(userId);
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
-        vote.close(timeProvider.nowDateTime());
+        voteService.close(vote, timeProvider.nowDateTime());
     }
 
     /** [멤버] 내 기수의 진행 중(OPEN) 투표 + 내 참여 여부. 진행 중 투표가 없으면 404. */
@@ -155,8 +146,12 @@ public class VoteFacade {
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
 
+        return participationOf(vote);
+    }
+
+    VoteParticipationResponse participationOf(final Vote vote) {
         final List<User> members = userService.findMembersByGeneration(vote.getGenerationId());
-        final Set<Long> respondedIds = voteService.findRespondedMemberIds(voteId);
+        final Set<Long> respondedIds = voteService.findRespondedMemberIds(vote.getId());
         final int respondedMembers =
                 (int) members.stream().filter(m -> respondedIds.contains(m.getId())).count();
         return VoteParticipationResponse.of(vote, members.size(), respondedMembers);
@@ -169,8 +164,12 @@ public class VoteFacade {
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
 
+        return nonRespondersOf(vote);
+    }
+
+    VoteNonRespondersResponse nonRespondersOf(final Vote vote) {
         final List<User> members = userService.findMembersByGeneration(vote.getGenerationId());
-        final Set<Long> respondedIds = voteService.findRespondedMemberIds(voteId);
+        final Set<Long> respondedIds = voteService.findRespondedMemberIds(vote.getId());
         final Map<Long, String> teamNameById =
                 teamService.findAllByGenerationId(vote.getGenerationId()).stream()
                         .collect(Collectors.toMap(Team::getId, Team::getName));
@@ -221,13 +220,17 @@ public class VoteFacade {
         final User manager = userService.getUser(userId);
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
+        return teamVoteResultsOf(vote);
+    }
+
+    TeamVoteResultResponse teamVoteResultsOf(final Vote vote) {
         final List<Team> teams = teamService.findAllByGenerationId(vote.getGenerationId());
         return TeamVoteResultResponse.of(
                 vote,
                 teams,
-                voteService.tallyTeamVotes(voteId),
-                voteService.findTeamVoteReasons(voteId),
-                voteService.countResponses(voteId));
+                voteService.tallyTeamVotes(vote.getId()),
+                voteService.findTeamVoteReasons(vote.getId()),
+                voteService.countResponses(vote.getId()));
     }
 
     /** [운영진] 참여 경험 피드백 결과 집계(질문 타입별 분포/텍스트). */
@@ -236,12 +239,16 @@ public class VoteFacade {
         final User manager = userService.getUser(userId);
         manager.validateManager();
         final Vote vote = voteService.getVote(voteId);
+        return feedbackResultsOf(vote);
+    }
+
+    FeedbackResultResponse feedbackResultsOf(final Vote vote) {
         return FeedbackResultResponse.of(
                 vote,
-                voteService.tallyFeedbackOptions(voteId),
-                voteService.tallyFeedbackBooleans(voteId),
-                voteService.findFeedbackTexts(voteId),
-                voteService.countResponses(voteId));
+                voteService.tallyFeedbackOptions(vote.getId()),
+                voteService.tallyFeedbackBooleans(vote.getId()),
+                voteService.findFeedbackTexts(vote.getId()),
+                voteService.countResponses(vote.getId()));
     }
 
     /** [운영진] 본인 기수의 투표 목록(최신순). */

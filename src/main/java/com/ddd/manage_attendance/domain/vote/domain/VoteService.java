@@ -5,8 +5,10 @@ import com.ddd.manage_attendance.core.sdui.TeamVoteTemplate;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest.FeedbackQuestionAnswer;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteSubmitRequest.TeamVoteCategoryAnswer;
+import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyOpenException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyRespondedException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteNotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class VoteService {
     private final TeamVoteAnswerRepository teamVoteAnswerRepository;
     private final TeamVoteReasonRepository teamVoteReasonRepository;
     private final FeedbackAnswerRepository feedbackAnswerRepository;
+    private final VoteTemplateValidator voteTemplateValidator;
 
     @Transactional(readOnly = true)
     public Vote getVote(final Long voteId) {
@@ -102,8 +105,51 @@ public class VoteService {
             final String title,
             final TeamVoteTemplate teamVoteTemplate,
             final FeedbackTemplate feedbackTemplate) {
+        voteTemplateValidator.validate(teamVoteTemplate, feedbackTemplate);
         return voteRepository.save(
                 Vote.createDraft(generationId, title, teamVoteTemplate, feedbackTemplate));
+    }
+
+    @Transactional
+    public void updateDraft(
+            final Vote vote,
+            final String title,
+            final TeamVoteTemplate teamVoteTemplate,
+            final FeedbackTemplate feedbackTemplate) {
+        voteTemplateValidator.validate(teamVoteTemplate, feedbackTemplate);
+        vote.updateDraft(title, teamVoteTemplate, feedbackTemplate);
+    }
+
+    @Transactional
+    public void reviseText(
+            final Vote vote,
+            final String title,
+            final TeamVoteTemplate teamVoteTemplate,
+            final FeedbackTemplate feedbackTemplate) {
+        voteTemplateValidator.validate(teamVoteTemplate, feedbackTemplate);
+        vote.reviseText(title, teamVoteTemplate, feedbackTemplate);
+    }
+
+    @Transactional
+    public void open(final Vote vote, final LocalDateTime now) {
+        if (voteRepository
+                .findFirstByGenerationIdAndStatusOrderByIdDesc(
+                        vote.getGenerationId(), VoteStatus.OPEN)
+                .isPresent()) {
+            throw new VoteAlreadyOpenException();
+        }
+        vote.open(now);
+    }
+
+    @Transactional
+    public void close(final Vote vote, final LocalDateTime now) {
+        vote.close(now);
+    }
+
+    @Transactional
+    public void delete(final Vote vote) {
+        vote.validateDeletable();
+        voteRepository.delete(vote);
     }
 
     /** 멱등 제출. (vote_id, member_id) 유니크 제약 + 동시성 예외 처리로 1인 1응답을 보장한다. 재투표는 거부한다. */

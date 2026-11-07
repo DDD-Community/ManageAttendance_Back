@@ -39,6 +39,14 @@ class InternalApiKeySecurityIntegrationTest {
     }
 
     @Test
+    @DisplayName("내부 투표 API 키가 없으면 401을 반환한다")
+    void voteApiWithoutKey_returnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/internal/generations/1/votes"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_INVALID_INTERNAL_KEY"));
+    }
+
+    @Test
     @DisplayName("잘못된 내부 API 키는 거부한다")
     void wrongKey_returnsUnauthorized() throws Exception {
         mockMvc.perform(get(URI).header("X-Internal-Api-Key", "wrong-key"))
