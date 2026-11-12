@@ -60,6 +60,36 @@ class TeamVoteResultResponseTest {
     }
 
     @Test
+    @DisplayName("득표가 같은 팀은 같은 순위를 받고 다음 순위는 그만큼 건너뛴다")
+    void of_givesSameRankToTiedTeams() {
+        final Vote vote = Vote.createDraft(GENERATION_ID, "최종 투표", singleCategoryTemplate(), null);
+        final List<Team> teams =
+                List.of(
+                        team(100L, "A팀", null),
+                        team(101L, "B팀", null),
+                        team(102L, "C팀", null),
+                        team(103L, "D팀", null));
+        final List<TeamVoteTally> tallies =
+                List.of(
+                        new TeamVoteTally("c1", 103L, 1L),
+                        new TeamVoteTally("c1", 101L, 3L),
+                        new TeamVoteTally("c1", 100L, 3L),
+                        new TeamVoteTally("c1", 102L, 1L));
+
+        final TeamVoteResultResponse response =
+                TeamVoteResultResponse.of(vote, teams, tallies, List.of(), 4L);
+
+        final List<TeamVoteResultResponse.TeamResult> results =
+                response.categories().get(0).teams();
+        assertThat(results)
+                .extracting(TeamVoteResultResponse.TeamResult::teamId)
+                .containsExactly(100L, 101L, 102L, 103L);
+        assertThat(results)
+                .extracting(TeamVoteResultResponse.TeamResult::rank)
+                .containsExactly(1, 1, 3, 3);
+    }
+
+    @Test
     @DisplayName("득표가 없는 팀은 결과에서 제외한다")
     void of_excludesTeamsWithoutVotes() {
         final Vote vote = Vote.createDraft(GENERATION_ID, "최종 투표", singleCategoryTemplate(), null);

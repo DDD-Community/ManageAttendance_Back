@@ -36,7 +36,7 @@ public record TeamVoteResultResponse(
 
     @Schema(title = "팀별 득표")
     public record TeamResult(
-            @Schema(description = "순위(1부터, 득표수 내림차순)") int rank,
+            @Schema(description = "순위(1부터, 득표수 내림차순, 동점은 같은 순위)") int rank,
             @Schema(description = "팀 Id") Long teamId,
             @Schema(description = "팀명", example = "iOS 1팀") String name,
             @Schema(description = "서비스명", example = "PICKFLOW") String serviceName,
@@ -87,15 +87,23 @@ public record TeamVoteResultResponse(
             final List<TeamVoteTally> categoryTallies, final Map<Long, Team> teamById) {
         final List<TeamVoteTally> sorted =
                 categoryTallies.stream()
-                        .sorted(Comparator.comparingLong(TeamVoteTally::voteCount).reversed())
+                        .sorted(
+                                Comparator.comparingLong(TeamVoteTally::voteCount)
+                                        .reversed()
+                                        .thenComparing(TeamVoteTally::teamId))
                         .toList();
         final List<TeamResult> results = new ArrayList<>();
-        int rank = 1;
-        for (final TeamVoteTally tally : sorted) {
+        // 공동 순위: 득표가 같으면 같은 순위, 다음 순위는 앞선 팀 수만큼 건너뛴다(1, 1, 3).
+        int rank = 0;
+        for (int i = 0; i < sorted.size(); i++) {
+            final TeamVoteTally tally = sorted.get(i);
+            if (i == 0 || tally.voteCount() != sorted.get(i - 1).voteCount()) {
+                rank = i + 1;
+            }
             final Team team = teamById.get(tally.teamId());
             results.add(
                     new TeamResult(
-                            rank++,
+                            rank,
                             tally.teamId(),
                             team == null ? null : team.getName(),
                             team == null ? null : team.getServiceName(),
