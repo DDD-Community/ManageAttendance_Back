@@ -25,6 +25,7 @@ import com.ddd.manage_attendance.domain.vote.api.dto.VoteSummaryResponse;
 import com.ddd.manage_attendance.domain.vote.api.dto.VoteTemplateUpdateRequest;
 import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
+import com.ddd.manage_attendance.domain.vote.exception.VoteNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,15 +51,28 @@ public class VoteFacade {
     public TeamVoteTemplateResponse getTeamVoteTemplate(final Long userId, final Long voteId) {
         final User user = userService.getUser(userId);
         final Vote vote = voteService.getVote(voteId);
+        validateMemberAccess(user, vote);
         final List<Team> teams = teamService.findAllByGenerationId(vote.getGenerationId());
         return TeamVoteTemplateResponse.from(vote, teams, user.getTeamId());
     }
 
     @Transactional(readOnly = true)
     public FeedbackTemplateResponse getFeedbackTemplate(final Long userId, final Long voteId) {
-        userService.getUser(userId);
+        final User user = userService.getUser(userId);
         final Vote vote = voteService.getVote(voteId);
+        validateMemberAccess(user, vote);
         return FeedbackTemplateResponse.from(vote);
+    }
+
+    // 멤버는 자기 기수의 공개된(DRAFT 아님) 투표만 볼 수 있다.
+    // 다른 기수·작성 중 투표의 존재를 흘리지 않도록 404 로 막는다. 운영진은 기수와 무관하게 관리하므로 제외.
+    private void validateMemberAccess(final User user, final Vote vote) {
+        if (user.isManager()) {
+            return;
+        }
+        if (vote.isDraft() || !vote.getGenerationId().equals(user.getGenerationId())) {
+            throw new VoteNotFoundException();
+        }
     }
 
     @Transactional
@@ -68,6 +82,7 @@ public class VoteFacade {
             throw new VoteManagerNotAllowedException();
         }
         final Vote vote = voteService.getVote(voteId);
+        validateMemberAccess(user, vote);
         vote.validateOpen();
 
         final List<Team> teams = teamService.findAllByGenerationId(vote.getGenerationId());

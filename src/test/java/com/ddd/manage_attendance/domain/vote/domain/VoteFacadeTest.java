@@ -24,6 +24,7 @@ import com.ddd.manage_attendance.domain.vote.api.dto.VoteParticipationResponse;
 import com.ddd.manage_attendance.domain.vote.exception.VoteAlreadyOpenException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteManagerNotAllowedException;
 import com.ddd.manage_attendance.domain.vote.exception.VoteNoActiveException;
+import com.ddd.manage_attendance.domain.vote.exception.VoteNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -199,5 +200,76 @@ class VoteFacadeTest {
                 .singleElement()
                 .extracting(VoteNonRespondersResponse.NonResponder::teamName)
                 .isNull();
+    }
+
+    private static Vote openVote(final Long generationId) {
+        final Vote vote = Vote.createDraft(generationId, "투표", null, null);
+        vote.open(LocalDateTime.of(2026, 11, 1, 10, 0));
+        return vote;
+    }
+
+    private User member(final Long generationId) {
+        final User member = mock(User.class);
+        given(userService.getUser(USER_ID)).willReturn(member);
+        given(member.getGenerationId()).willReturn(generationId);
+        return member;
+    }
+
+    @Test
+    @DisplayName("다른 기수 멤버는 진행 중 투표의 템플릿을 볼 수 없고 404 로 막힌다")
+    void getFeedbackTemplate_whenOtherGeneration_throwsNotFound() {
+        member(GENERATION_ID + 1);
+        given(voteService.getVote(VOTE_ID)).willReturn(openVote(GENERATION_ID));
+
+        assertThatThrownBy(() -> voteFacade.getFeedbackTemplate(USER_ID, VOTE_ID))
+                .isInstanceOf(VoteNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("같은 기수 멤버도 작성 중(DRAFT) 투표의 템플릿은 볼 수 없다")
+    void getTeamVoteTemplate_whenDraft_throwsNotFound() {
+        final User member = mock(User.class);
+        given(userService.getUser(USER_ID)).willReturn(member);
+        given(voteService.getVote(VOTE_ID))
+                .willReturn(Vote.createDraft(GENERATION_ID, "초안", null, null));
+
+        assertThatThrownBy(() -> voteFacade.getTeamVoteTemplate(USER_ID, VOTE_ID))
+                .isInstanceOf(VoteNotFoundException.class);
+        verify(teamService, never()).findAllByGenerationId(any());
+    }
+
+    @Test
+    @DisplayName("같은 기수 멤버는 진행 중 투표의 템플릿을 볼 수 있다")
+    void getFeedbackTemplate_whenSameGeneration_returns() {
+        member(GENERATION_ID);
+        given(voteService.getVote(VOTE_ID)).willReturn(openVote(GENERATION_ID));
+
+        assertThat(voteFacade.getFeedbackTemplate(USER_ID, VOTE_ID).status())
+                .isEqualTo(VoteStatus.OPEN);
+    }
+
+    @Test
+    @DisplayName("운영진은 기수와 상태에 관계없이 템플릿을 볼 수 있다")
+    void getFeedbackTemplate_whenManager_skipsGuard() {
+        final User manager = mock(User.class);
+        given(userService.getUser(USER_ID)).willReturn(manager);
+        given(manager.isManager()).willReturn(true);
+        given(voteService.getVote(VOTE_ID))
+                .willReturn(Vote.createDraft(GENERATION_ID + 1, "초안", null, null));
+
+        assertThat(voteFacade.getFeedbackTemplate(USER_ID, VOTE_ID).status())
+                .isEqualTo(VoteStatus.DRAFT);
+    }
+
+    @Test
+    @DisplayName("다른 기수 멤버의 제출은 404 로 막히고 응답이 저장되지 않는다")
+    void submit_whenOtherGeneration_throwsNotFound() {
+        member(GENERATION_ID + 1);
+        given(voteService.getVote(VOTE_ID)).willReturn(openVote(GENERATION_ID));
+
+        assertThatThrownBy(() -> voteFacade.submit(USER_ID, VOTE_ID, null))
+                .isInstanceOf(VoteNotFoundException.class);
+        verify(voteService, never()).submitResponse(any(), any(), any(), any(), any());
+        verify(voteAnswerValidator, never()).validate(any(), any(), any(), any());
     }
 }
